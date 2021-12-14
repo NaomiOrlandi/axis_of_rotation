@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 import glob
 import preparation_data
+import os
 
 '''
 def parse_args ():
@@ -39,12 +40,15 @@ def main ():
     #args = parse_args()
 
 
-    filepath = config.get('directories','dirpath_tomo')+'/*.tiff'   #path to the tomographic projections
-    flatpath = config.get('directories','dirpath_flat')+'/*.tiff'   #path to the flat image/es
-    darkpath = config.get('directories','dirpath_dark')+'/*.tiff'   #path to the dark image/es
+    filepath = os.path.join(config.get('directories','dirpath_tomo'),'*.tiff')   #path to the tomographic projections
+    flatpath = os.path.join(config.get('directories','dirpath_flat'),'*.tiff')   #path to the flat image/es
+    darkpath = os.path.join(config.get('directories','dirpath_dark'),'*.tiff')   #path to the dark image/es
     last_angle = config.getint('angle','angle')
 
-    print(last_angle,filepath,flatpath,darkpath)
+    print(filepath,flatpath,darkpath)
+
+    
+    
 
     #lists of images
     tomo_list = preparation_data.reader_gray_images(filepath)
