@@ -46,4 +46,3 @@ def plot_tracker (img_array):
     tracker = IndexTracker(ax, img_array)
     fig.canvas.mpl_connect('key_press_event', tracker.on_scroll)
     plt.show()
-

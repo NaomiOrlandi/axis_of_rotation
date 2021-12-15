@@ -1,12 +1,16 @@
 import argparse
 import configparser
+from sys import argv
+from matplotlib.pyplot import plot
 import numpy as np
 import cv2
 import glob
 import preparation_data
 import os
+from image_slicer import plot_tracker
+import preprocessing_and_COR
 
-'''
+
 def parse_args ():
     description = 'Correction of rotation axis for tomographic projections'
     parser = argparse.ArgumentParser(description=description)
@@ -32,7 +36,7 @@ def parse_args ():
                          help='the offset and the tilt angle of the rotation axis is found with respect to the ccentral axis of the detector')
     args = parser.parse_args()
     return args
-'''
+
 def main ():
     config = configparser.ConfigParser()
     config.read('paths.ini')
@@ -43,26 +47,45 @@ def main ():
     filepath = os.path.join(config.get('directories','dirpath_tomo'),'*.tiff')   #path to the tomographic projections
     flatpath = os.path.join(config.get('directories','dirpath_flat'),'*.tiff')   #path to the flat image/es
     darkpath = os.path.join(config.get('directories','dirpath_dark'),'*.tiff')   #path to the dark image/es
+    
+    new_filepath = config.get('final files','filepath') #path and the prefix of the name of the final files to be  saved in the specified folder
+    digits = config.getint('final files','digits') #number of digits to put in the final part of the final filenames to represent the index of the projections (ex. digit=4 -> filename_0000.tiff,filename_0001.tiff,...)
+
     last_angle = config.getint('angle','angle')
+    radius_neighborhood = config.getint('outlier filter','radius_neighborhood')
+    #print(filepath,flatpath,darkpath)
 
-    print(filepath,flatpath,darkpath)
 
-    
-    
 
     #lists of images
     tomo_list = preparation_data.reader_gray_images(filepath)
     flat_list = preparation_data.reader_gray_images(flatpath)
     dark_list = preparation_data.reader_gray_images(darkpath)
 
-    print(len(tomo_list),len(flat_list),len(dark_list))
+    #print(len(tomo_list),len(flat_list),len(dark_list))
 
     #3D arrays of images
     tomo_stack = preparation_data.create_array(tomo_list,tomo_list)
     flat_stack = preparation_data.create_array(flat_list,tomo_list)
     dark_stack = preparation_data.create_array(dark_list,tomo_list)
 
-    print(tomo_stack.shape,flat_stack.shape,dark_stack.shape)
+    #print(tomo_stack.shape,flat_stack.shape,dark_stack.shape)
+    plot_tracker(tomo_stack)
+
+    tomo_0,tomo_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
+
+    args = parse_args()
+    
+    if args.roi and args.norm and args.out and args.find:
+
+        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0)
+        tomo_stack_norm = preprocessing_and_COR.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
+        tomo_stack_norm_filtered = preprocessing_and_COR.outliers_filter(tomo_stack_norm,radius_neighborhood)
+        tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm_filtered)
+        tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm_filtered,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
+        preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
+        
+        
 
 if __name__ == '__main__':
     main()
