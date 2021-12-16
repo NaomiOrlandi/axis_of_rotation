@@ -25,7 +25,7 @@ def find_center_of_rotation (proj_0, proj_180, nroi=None, ref_proj=None, ystep=5
     middle_shift,theta = ntp.find_COR(proj_0, proj_180, nroi=None, ref_proj=None, ystep=5, ShowResults=True)
     return middle_shift,theta
 
-def correct_images (img_stack, proj_0, proj_180, show_opt='mean', shift=None, theta=None, nroi=None, ystep=5):
+def correct_images (img_stack, proj_0, proj_180, show_opt='zero', shift=None, theta=None, nroi=None, ystep=5):
     img_stack_corrected = ntp.correction_COR(img_stack, proj_0, proj_180, show_opt='mean', shift=None, theta=None, nroi=None, ystep=5)
     image_slicer.plot_tracker(img_stack_corrected)
     return img_stack_corrected
