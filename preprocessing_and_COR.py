@@ -24,9 +24,25 @@ def normalization_no_ROI (img_stack,dark_stack,flat_stack):
     return img_stack_norm
 
 def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0, out=None):
-    img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='bright',k=1)
-    img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='dark',k=1)
+    ans = input('> Do you want to perform a filtering from bright outliers,dark outliers or both?\
+	 \n[B] filter just bright outliers\
+     \n[D] filter just dark outliers\
+	 \n[A] filter both bright and dark outliers\
+	 \nType your answer and press [Enter] :')
+    if ans == 'B' or ans == 'b':
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='bright',k=1)
+    elif ans == 'D' or ans == 'd':
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='dark',k=1)
+    elif ans == 'A' or ans == 'a':
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='bright',k=1)
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='dark',k=1)
+    else:
+        print('Input not valid.')
+    
     return img_stack_filtered
+    #img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='bright',k=1)
+    #img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='dark',k=1)
+    #return img_stack_filtered
 
 def find_center_of_rotation (proj_0, proj_180, nroi=None, ref_proj=None, ystep=5, ShowResults=False):
     middle_shift,theta = ntp.find_COR(proj_0, proj_180, nroi=None, ref_proj=None, ystep=5, ShowResults=False)
