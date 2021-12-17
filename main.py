@@ -92,7 +92,7 @@ def main ():
         tomo_stack_crop = preprocessing_and_COR.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
         tomo_stack_filtered = preprocessing_and_COR.outliers_filter(tomo_stack_crop,radius_neighborhood)
         tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
-        tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm_filtered,tomo_stack_filtered_0,tomo_stack_filtered_180,datapath)
+        tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_filtered,tomo_stack_filtered_0,tomo_stack_filtered_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if not args.roi and args.norm and args.out:
