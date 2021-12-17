@@ -27,7 +27,7 @@ class IndexTracker:
         self.update()
 
     def on_scroll(self, event):
-        print("%s" % (event.key))
+        #print("%s" % (event.key))
         if event.key == 'right':
             self.ind = (self.ind + 1) % self.slices
         elif event.key == 'left':
