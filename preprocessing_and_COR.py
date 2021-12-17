@@ -61,6 +61,6 @@ def save_images (new_fname,img_stack,digits):
 
 def cropping (img_stack,rowmin,rowmax,colmin,colmax):
     for i in range(img_stack.shape[0]):
-        img_stack_cropped = img_stack[:,rowmin:rowmax,colmin:colmax]
+        img_stack_cropped = img_stack[:,rowmin:rowmax,colmin:colmax].astype(np.float32)
     return img_stack_cropped
 
