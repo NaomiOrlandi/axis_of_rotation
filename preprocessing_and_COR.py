@@ -4,10 +4,14 @@ from numpy.core.numeric import empty_like
 import image_slicer
 import cv2
 import numpy as np
+import os
 
 
-def draw_ROI (proj_0):
+def draw_ROI (proj_0,datapath):
     rowmin,rowmax,colmin,colmax = ntp.draw_ROI(proj_0, 'ROI from projection_0', ratio=0.85)
+    file_data = open(os.path.join(datapath,'data.txt'),'a')
+    file_data.write('rowmin {0} \nrowmax {1} \ncolmin {2} \ncolmax {3}'.format(rowmin,rowmax,colmin,colmax))
+    file_data.close()
     return rowmin,rowmax,colmin,colmax
 
 def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax):
@@ -28,9 +32,12 @@ def find_center_of_rotation (proj_0, proj_180, nroi=None, ref_proj=None, ystep=5
     middle_shift,theta = ntp.find_COR(proj_0, proj_180, nroi=None, ref_proj=None, ystep=5, ShowResults=False)
     return middle_shift,theta
 
-def correct_images (img_stack, proj_0, proj_180, show_opt='zero', shift=None, theta=None, nroi=None, ystep=5):
-    img_stack_corrected = ntp.correction_COR(img_stack, proj_0, proj_180, show_opt='zero', shift=None, theta=None, nroi=None, ystep=5)
+def correct_images (img_stack, proj_0, proj_180,datapath, show_opt='zero', shift=None, theta=None, nroi=None, ystep=5):
+    img_stack_corrected,shift,theta = ntp.correction_COR(img_stack, proj_0, proj_180, show_opt='zero', shift=None, theta=None, nroi=None, ystep=5)
     image_slicer.plot_tracker(img_stack_corrected)
+    file_data = open(os.path.join(datapath,'data.txt'),'a')
+    file_data.write('\nshift {0} \ntilt angle {1}'.format(shift,theta))
+    file_data.close()
     return img_stack_corrected
 
 def save_images (new_fname,img_stack,digits):
