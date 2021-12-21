@@ -38,11 +38,11 @@ def main ():
     config.read('paths.ini')
 
 
-    datapath = config.get('final files','dirpath_data')
-    filepath = os.path.join(config.get('directories','dirpath_tomo'),'*.tiff')   #path to the tomographic projections
-    flatpath = os.path.join(config.get('directories','dirpath_flat'),'*.tiff')   #path to the flat image/es
-    darkpath = os.path.join(config.get('directories','dirpath_dark'),'*.tiff')   #path to the dark image/es
-    
+    filepath = config.get('directories','dirpath_tomo')   #path to the tomographic projections
+    flatpath = config.get('directories','dirpath_flat')   #path to the flat image/es
+    darkpath = config.get('directories','dirpath_dark')   #path to the dark image/es
+
+    datapath = config.get('final files','dirpath_data') #path for the data.txt file with coordinates of ROI, offset and tilt angle
     new_filepath = config.get('final files','filepath') #path and the prefix of the name of the final files to be  saved in the specified folder
     digits = config.getint('final files','digits') #number of digits to put in the final part of the final filenames to represent the index of the projections (ex. digit=4 -> filename_0000.tiff,filename_0001.tiff,...)
 
@@ -57,14 +57,14 @@ def main ():
     flat_list = preparation_data.reader_gray_images(flatpath)
     dark_list = preparation_data.reader_gray_images(darkpath)
 
-    #print(len(tomo_list),len(flat_list),len(dark_list))
+    print(len(tomo_list))#,len(flat_list),len(dark_list))
 
     #3D arrays of images
     tomo_stack = preparation_data.create_array(tomo_list,tomo_list)
     flat_stack = preparation_data.create_array(flat_list,tomo_list)
     dark_stack = preparation_data.create_array(dark_list,tomo_list)
 
-    #print(tomo_stack.shape,flat_stack.shape,dark_stack.shape)
+    print(tomo_stack.shape,flat_stack.shape,dark_stack.shape)
     plot_tracker(tomo_stack)
 
     tomo_0,tomo_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
