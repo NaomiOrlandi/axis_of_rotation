@@ -19,16 +19,20 @@ def reader_gray_images (filepath):
 
 #image list is transformed in a 3D array
 def create_array (img_list,img_list_tomo):
-    if len(img_list) == len(img_list_tomo):
-        img_array = np.asarray(img_list)
-        return img_array
-    elif len(img_list) == 1:
-        tomo_array = np.asarray(img_list_tomo)
-        img_array = np.full(tomo_array.shape,img_list)
-        return img_array
+    im_dim = np.array(img_list[0]).shape
+    tomo_dim = np.array(img_list_tomo[0]).shape
+    if im_dim == tomo_dim:
+        if len(img_list) == len(img_list_tomo):
+            img_array = np.asarray(img_list)
+            return img_array
+        elif len(img_list) == 1:
+            tomo_array = np.asarray(img_list_tomo)
+            img_array = np.full(tomo_array.shape,img_list)
+            return img_array
+        elif len(img_list) !=1 and len(img_list) != len(img_list_tomo):
+            raise ValueError('{0} should contain or 1 image or an amount of images equal to the num of tomographic projections'.format(img_list))
     else:
-        raise ValueError('{0} should contain or 1 image or an amount of images equal to the num of tomographic projections'.format(img_list))
-
+        raise ValueError('{0} should contain images with the same dimensions of tomographic projections'.format(img_list))
 
 
 
@@ -36,8 +40,8 @@ def create_array (img_list,img_list_tomo):
 def projection_0_180 (angle,img_array):
     proj_0 = img_array[0,:,:]
     if angle == 360:
-        proj_180 = img_array[int(img_array.shape[0]/2),:,:]
+        proj_180 = img_array[int((img_array.shape[0]/2)-1),:,:]
     elif angle == 180:
-        proj_180 = img_array[int(img_array.shape[0]),:,:]
+        proj_180 = img_array[int(img_array.shape[0]-1),:,:]
     return proj_0,proj_180
     
