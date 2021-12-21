@@ -1,14 +1,21 @@
 import cv2
 import glob
 import numpy as np
+import os
 
 #reader of the images that returns a list of images
 def reader_gray_images (filepath):
     image_list = []
-    for filename in glob.glob(filepath): 
-        im=cv2.imread(filename,cv2.IMREAD_GRAYSCALE) #0 stands for the gray_image reading (default is RGB reading)
-        image_list.append(im)
-    return image_list
+    files = os.path.join(filepath,'*.tiff')
+
+    if os.path.isdir(filepath):
+        for filename in glob.glob(files): 
+            im=cv2.imread(filename,cv2.IMREAD_GRAYSCALE) #0 stands for the gray_image reading (default is RGB reading)
+            image_list.append(im)
+        return image_list
+    else:
+        raise ImportError('directory {0} does not exist'.format(filepath))
+    
 
 #image list is transformed in a 3D array
 def create_array (img_list,img_list_tomo):
@@ -16,9 +23,11 @@ def create_array (img_list,img_list_tomo):
         img_array = np.asarray(img_list)
         return img_array
     elif len(img_list) == 1:
-        tomo_array = np.asarray(img_list)
+        tomo_array = np.asarray(img_list_tomo)
         img_array = np.full(tomo_array.shape,img_list)
         return img_array
+    else:
+        raise ValueError('{0} should contain or 1 image or an amount of images equal to the num of tomographic projections'.format(img_list))
 
 
 
