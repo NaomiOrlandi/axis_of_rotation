@@ -38,3 +38,22 @@ def test_create_array_few_img ():
         preparation_data.create_array(test_list,test_ref_list)
     assert str(e.value) == '{0} should contain or 1 image or an amount of images equal to the num of tomographic projections'.format(test_list)
 
+def test_create_array_wrong_list ():
+    test_ref_list = np.random.rand(3,2,5).tolist()
+    test_list = np.random.rand(3,4,2).tolist()
+    ref_dim = np.array(test_ref_list[0]).shape
+    test_dim = np.array(test_list[0]).shape
+    with pytest.raises(ValueError) as e:
+        preparation_data.create_array(test_list,test_ref_list)
+    assert str(e.value) == '{0} should contain images with the same dimensions of tomographic projections'.format(test_list)
+
+def test_projection_0_180_correct_values ():
+    array=np.random.rand(4,2,2)
+    array_corr=np.where(np.isnan(array),0,array)
+    arr_360_0,arr_360_180=preparation_data.projection_0_180(360,array_corr)
+    arr_180_0,arr_180_180=preparation_data.projection_0_180(180,array_corr)
+    assert np.array_equiv(array_corr[0],arr_360_0)
+    assert np.array_equiv(array_corr[1],arr_360_180)
+    assert np.array_equiv(array_corr[0],arr_180_0)
+    assert np.array_equiv(array_corr[3],arr_180_180)
+
