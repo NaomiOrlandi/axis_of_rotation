@@ -2,6 +2,9 @@ import pytest
 import preprocessing_and_COR
 import preparation_data
 import numpy as np
+from unittest import mock
+import cv2
+from io import StringIO
 
 #==================================
 #UNIT TESTING
@@ -119,4 +122,78 @@ def test_normalization_ROI_same_dim ():
     
     for i in range(len(im_norm.shape)):
         assert im_norm.shape[i] == new_dim[i]
+
+def test_outliers_filter_bright_spot_image_b():
+    path='C:\\Users\\Naomi\\correctionCOR\\bright_spot.tiff'
+    im=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+    im=im.astype(np.float32)
+    im_stack=np.full((3,506,900),im)
+
+    with mock.patch('builtins.input',return_value='b'):
+        im_stack_filt = preprocessing_and_COR.outliers_filter(im_stack,5)
+        
+        for i in range(3):
+            assert np.max(im_stack_filt[i]) == np.min(im_stack_filt[i]) == 0.0
+
+def test_outliers_filter_bright_spot_image_a():
+    path='C:\\Users\\Naomi\\correctionCOR\\bright_spot.tiff'
+    im=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+    im=im.astype(np.float32)
+    im_stack=np.full((3,506,900),im)
+
+    with mock.patch('builtins.input',return_value='a'):
+        im_stack_filt = preprocessing_and_COR.outliers_filter(im_stack,5)
+        
+        for i in range(3):
+            assert np.max(im_stack_filt[i]) == np.min(im_stack_filt[i]) == 0.0
+
+def test_outliers_filter_bright_spot_image_d():
+    path='C:\\Users\\Naomi\\correctionCOR\\bright_spot.tiff'
+    im=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+    im=im.astype(np.float32)
+    im_stack=np.full((3,506,900),im)
+    with mock.patch('builtins.input',return_value='d'):
+        im_stack_filt = preprocessing_and_COR.outliers_filter(im_stack,5)
+        
+        for i in range(3):
+            assert np.max(im_stack_filt[i]) == 255.0 
+            assert np.min(im_stack_filt[i]) == 0.0
+
+def test_outliers_filter_dark_spot_image_d():
+    path='C:\\Users\\Naomi\\correctionCOR\\dark_spot.tiff'
+    im=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+    im=im.astype(np.float32)
+    im_stack=np.full((3,506,900),im)
+
+    with mock.patch('builtins.input',return_value='d'):
+        im_stack_filt = preprocessing_and_COR.outliers_filter(im_stack,5)
+        
+        for i in range(3):
+            assert np.max(im_stack_filt[i]) == np.min(im_stack_filt[i]) == 255.0
+
+def test_outliers_filter_dark_spot_image_a():
+    path='C:\\Users\\Naomi\\correctionCOR\\dark_spot.tiff'
+    im=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+    im=im.astype(np.float32)
+    im_stack=np.full((3,506,900),im)
+
+    with mock.patch('builtins.input',return_value='a'):
+        im_stack_filt = preprocessing_and_COR.outliers_filter(im_stack,5)
+        
+        for i in range(3):
+            assert np.max(im_stack_filt[i]) == np.min(im_stack_filt[i]) == 255.0
+
+def test_outliers_filter_dark_spot_image_b():
+    path='C:\\Users\\Naomi\\correctionCOR\\dark_spot.tiff'
+    im=cv2.imread(path,cv2.IMREAD_GRAYSCALE)
+    im=im.astype(np.float32)
+    im_stack=np.full((3,506,900),im)
+
+    with mock.patch('builtins.input',return_value='b'):
+        im_stack_filt = preprocessing_and_COR.outliers_filter(im_stack,5)
+        
+        for i in range(3):
+            assert np.max(im_stack_filt[i]) == 255.0 
+            assert np.min(im_stack_filt[i]) == 0.0
+
 
