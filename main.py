@@ -57,14 +57,14 @@ def main ():
     flat_list = preparation_data.reader_gray_images(flatpath)
     dark_list = preparation_data.reader_gray_images(darkpath)
 
-    print(len(tomo_list))#,len(flat_list),len(dark_list))
+    #print(len(tomo_list)),len(flat_list),len(dark_list))
 
     #3D arrays of images
     tomo_stack = preparation_data.create_array(tomo_list,tomo_list)
     flat_stack = preparation_data.create_array(flat_list,tomo_list)
     dark_stack = preparation_data.create_array(dark_list,tomo_list)
 
-    print(tomo_stack.shape,flat_stack.shape,dark_stack.shape)
+    #print(tomo_stack.shape,flat_stack.shape,dark_stack.shape)
     plot_tracker(tomo_stack)
 
     tomo_0,tomo_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
@@ -120,6 +120,12 @@ def main ():
         tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
         tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_filtered,tomo_stack_filtered_0,tomo_stack_filtered_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
+
+    if not args.roi and not args.norm and not args.out:
+        tomo_stack_0,tomo_stack_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
+        tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack,tomo_stack_0,tomo_stack_180,datapath)
+        preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
+
 
 if __name__ == '__main__':
     main()
