@@ -196,4 +196,18 @@ def test_outliers_filter_dark_spot_image_b():
             assert np.max(im_stack_filt[i]) == 255.0 
             assert np.min(im_stack_filt[i]) == 0.0
 
+def test_find_shift_and_theta ():
+    path1='C:\\NAOMI_DATI\\UNIBO\\Magistrale\\Tesi\\Tomo_nota\\prova\\tomograf.tiff'
+    im=cv2.imread(path1,cv2.IMREAD_GRAYSCALE)
+    im=im.astype(np.float32)
+    shift_known= 54
+    theta_known = -3
+    ymin=226
+    ymax=844
+    ystep=5
+    y_ot_ROIs= np.arange(ymin, ymax +1, ystep)
+    shift,theta=preprocessing_and_COR.find_shift_and_tilt_angle(y_ot_ROIs,im,im)
+    assert np.isclose(shift,shift_known,rtol=1e-1,atol=1e-2)
+    assert np.isclose(theta,theta_known,rtol=1e-1,atol=1e-2)
+
 
