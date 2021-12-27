@@ -12,7 +12,11 @@ def reader_gray_images (filepath):
         for filename in glob.glob(files): 
             im=cv2.imread(filename,cv2.IMREAD_GRAYSCALE) #0 stands for the gray_image reading (default is RGB reading)
             image_list.append(im)
-        return image_list
+        if len(image_list)==0:
+            raise ImportError('directory {0} does not contain any .tiff file'.format(filepath))
+        else:
+            return image_list
+        
     else:
         raise ImportError('directory {0} does not exist'.format(filepath))
     
@@ -41,7 +45,10 @@ def projection_0_180 (angle,img_array):
     proj_0 = img_array[0,:,:]
     if angle == 360:
         proj_180 = img_array[int((img_array.shape[0]/2)-1),:,:]
+        return proj_0,proj_180
     elif angle == 180:
         proj_180 = img_array[int(img_array.shape[0]-1),:,:]
-    return proj_0,proj_180
+        return proj_0,proj_180
+    else:
+        raise ValueError('the maximum angle for the tomography should be or 180 or 360 degrees')
     
