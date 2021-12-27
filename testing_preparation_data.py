@@ -1,11 +1,9 @@
-from os import fspath, listdir
 import pytest
 import preparation_data
 import numpy as np
 import os
 from hypothesis import given
 import hypothesis.strategies as st
-from hypothesis import given
 from hypothesis.extra.numpy import arrays
 
 
