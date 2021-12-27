@@ -33,8 +33,11 @@ def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin
     return img_stack_norm
 
 def normalization_no_ROI (img_stack,dark_stack,flat_stack):
-    img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_draw=False)
-    return img_stack_norm
+    if img_stack.shape == dark_stack.shape and img_stack.shape == flat_stack.shape:
+        img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_draw=False)
+        return img_stack_norm
+    else:
+        raise ValueError('the stack of images (tomographic projections,flat images and dark images) must have the same dimensions')
 
 def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0, out=None):
     ans = input('> Do you want to perform a filtering from bright outliers,dark outliers or both?\
@@ -157,7 +160,7 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     anchored_text1 = AnchoredText(info_cor, loc=2)
     ax1.add_artist(anchored_text1)
 
-    plt.title('$P_0 - P^{flipped}_{\pi}$ before correction')
+    plt.title(r'$P_0 - P^{flipped}_{\pi}$ before correction')
     plt.colorbar(fraction=0.046, pad=0.04)
 
 
@@ -199,7 +202,7 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     mu = np.median(diff2)
     s  = diff2.std()
     plt.imshow(diff2 , cmap='gray', vmin=mu-s, vmax=mu+s)
-    plt.title('$P_0 - P^{flipped}_{\pi}$ after correction')
+    plt.title(r'$P_0 - P^{flipped}_{\pi}$ after correction')
     plt.colorbar(fraction=0.046, pad=0.04)
 
 
@@ -222,7 +225,7 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
 
 	# write text about residuals
     res =  np.abs(diff2).mean()
-    info_res = '$||P_0 - P^{flipped}_{\pi}||_1 / N_{pixel}$ = ' + "{:.4f}".format(res)
+    info_res = r'$||P_0 - P^{flipped}_{\pi}||_1 / N_{pixel}$ = ' + "{:.4f}".format(res)
     anchored_text3 = AnchoredText(info_res, loc=1)
     ax3.add_artist(anchored_text3)
 
