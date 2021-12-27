@@ -78,8 +78,9 @@ def main ():
         tomo_stack_norm_filtered = preprocessing_and_COR.outliers_filter(tomo_stack_norm,radius_neighborhood)
         tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm_filtered)
         y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_filtered_0,ystep=5)
-        shift,theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm_filtered,shift,theta,datapath)
+        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
+        preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm_filtered,middle_shift,theta,datapath)
         #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm_filtered,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
         
@@ -89,8 +90,9 @@ def main ():
         tomo_stack_norm_0, tomo_stack_norm_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm)
         
         y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_0,ystep=5)
-        shift,theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm,shift,theta,datapath)
+        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
+        preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm,middle_shift,theta,datapath)
         
         #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm,tomo_stack_norm_0,tomo_stack_norm_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
@@ -102,8 +104,9 @@ def main ():
         tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
         
         y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_filtered_0,ystep=5)
-        shift,theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_filtered,shift,theta,datapath)
+        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
+        preprocessing_and_COR.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_filtered,middle_shift,theta,datapath)
         
         #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_filtered,tomo_stack_filtered_0,tomo_stack_filtered_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
@@ -114,8 +117,9 @@ def main ():
         tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm_filtered)
         
         y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_filtered_0,ystep=5)
-        shift,theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm_filtered,shift,theta,datapath)
+        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
+        preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm_filtered,middle_shift,theta,datapath)
         
         #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm_filtered,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
@@ -126,8 +130,9 @@ def main ():
         tomo_stack_crop_0,tomo_stack_crop_180 = preparation_data.projection_0_180(last_angle,tomo_stack_crop)
         
         y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_crop_0,ystep=5)
-        shift,theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_crop_0,tomo_stack_crop_180)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_crop,shift,theta,datapath)
+        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_crop_0,tomo_stack_crop_180)
+        preprocessing_and_COR.graph_axis_rotation(tomo_stack_crop_0,tomo_stack_crop_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_crop,middle_shift,theta,datapath)
         
         #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_crop,tomo_stack_crop_0,tomo_stack_crop_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected)
@@ -137,8 +142,9 @@ def main ():
         tomo_stack_norm_0, tomo_stack_norm_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm)
         
         y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_0,ystep=5)
-        shift,theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm,shift,theta,datapath)
+        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
+        preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm,middle_shift,theta,datapath)
         
         #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm,tomo_stack_norm_0,tomo_stack_norm_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
@@ -148,8 +154,9 @@ def main ():
         tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
         
         y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_filtered_0,ystep=5)
-        shift,theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_filtered,shift,theta,datapath)
+        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
+        preprocessing_and_COR.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_filtered,middle_shift,theta,datapath)
         
         # tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_filtered,tomo_stack_filtered_0,tomo_stack_filtered_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
@@ -158,8 +165,9 @@ def main ():
         tomo_stack_0,tomo_stack_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
         
         y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_0,ystep=5)
-        shift,theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_0,tomo_stack_180)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack,shift,theta,datapath)
+        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_0,tomo_stack_180)
+        preprocessing_and_COR.graph_axis_rotation(tomo_stack_0,tomo_stack_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack,middle_shift,theta,datapath)
 
         # tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack,tomo_stack_0,tomo_stack_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
