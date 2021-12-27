@@ -1,12 +1,75 @@
+from os import fspath, listdir
 import pytest
 import preparation_data
 import numpy as np
+import os
+from hypothesis import given
+import hypothesis.strategies as st
+from hypothesis import given
+from hypothesis.extra.numpy import arrays
+
+
+
+#============================================
+#PROPERTY TESTING
+#============================================
+
+blacklist = [".", "<", ">", ":", '"', "/", "|", "?", "*"]
+@given(filepath=st.text(st.characters(blacklist_characters=blacklist,min_codepoint=32,max_codepoint=126),min_size=1,max_size=64)) #codepoints include basic Latin from https://en.wikipedia.org/wiki/List_of_Unicode_characters
+def test_reader_gray_images_random_filepath (filepath):
+    if os.path.isdir(filepath):
+        if (not any(fname.endswith('.tiff')) for fname in os.listdir(filepath)):
+            with pytest.raises(ImportError) as er:
+                preparation_data.reader_gray_images(filepath)
+            assert str(er.value) == 'directory {0} does not contain any .tiff file'.format(filepath)
+        else:
+            assert len(preparation_data.reader_gray_images(filepath)) > 0
+    else:
+        with pytest.raises(ImportError) as e:
+            preparation_data.reader_gray_images(filepath)
+        assert str(e.value) == 'directory {0} does not exist'.format(filepath)
+
+
+@given(list1=st.lists(arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(min_value=0,allow_nan=False, allow_infinity=False),fill=st.nothing()),min_size=1),
+       list2=st.lists(arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(min_value=0,allow_nan=False, allow_infinity=False),fill=st.nothing()),min_size=1))
+def test_create_array_propr(list1,list2):
+    if list1[0].shape == list2[0].shape:
+        if len(list1) != 1 or len(list1) != len(list2):
+            with pytest.raises(ValueError) as er:
+                preparation_data.create_array(list1,list2)
+            assert str(er.value) == '{0} should contain or 1 image or an amount of images equal to the num of tomographic projections'.format(list1)
+        else:
+            assert preparation_data.create_array(list1,list2).shape[0] == len(list2)
+            for i in range(2):
+                assert preparation_data.create_array(list1,list2).shape[i+1] == list2[0].shape[i]
+    else:
+        with pytest.raises(ValueError) as e:
+            preparation_data.create_array(list1,list2)
+        assert str(e.value) == '{0} should contain images with the same dimensions of tomographic projections'.format(list1)
+
+
+@given(angle=st.integers(min_value=0,max_value=360),
+       array=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(min_value=0,allow_nan=False, allow_infinity=False),fill=st.nothing()))
+def test_proj_0_180 (angle,array):
+    if angle == 180 or angle == 360:
+        for i in range(2): #loop over outputs
+            for j in range (2): #loop over dimensions
+                assert array.shape[j+1] == preparation_data.projection_0_180(angle,array)[i].shape[j]
+    else:
+        with pytest.raises(ValueError) as e:
+            preparation_data.projection_0_180(angle,array)
+        assert str(e.value) == 'the maximum angle for the tomography should be or 180 or 360 degrees'
+
+    
+
+
+
 
 #=============================================
 #UNIT TESTING
 #=============================================
 
-def test_reeder_gray_image_wrong_filepath ():
+def test_reader_gray_image_wrong_filepath ():
     filepath = 'not\\existing\\path'
     with pytest.raises(ImportError) as e:
         preparation_data.reader_gray_images(filepath)
