@@ -142,101 +142,7 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     print("offset =", offset, "   tilt angle =", theta, "°"  )
 
     return m,q,shift,offset,middle_shift, theta
-'''
-    p0_r = np.zeros(proj_0.shape, dtype=np.float32)
-    p90_r = np.zeros(proj_0.shape, dtype=np.float32)
 
-
-	# plot difference proj_0 - proj_180_flipped
-    plt.figure('Analysis of the rotation axis position', figsize=(14,5), dpi=96)
-    plt.subplots_adjust(wspace=0.5)
-    ax1 = plt.subplot(1,2,1)
-
-    diff = proj_0 - proj_180_flip
-    mu = np.median(diff)
-    s  = diff.std()
-
-    plt.imshow(diff, cmap='gray', vmin=mu-s, vmax=mu+s)
-
-    info_cor = 'offset = '  + "{:.2f}".format(offset) + '\n       θ = ' + "{:.3f}".format(theta)
-    anchored_text1 = AnchoredText(info_cor, loc=2)
-    ax1.add_artist(anchored_text1)
-
-    plt.title(r'$P_0 - P^{flipped}_{\pi}$ before correction')
-    plt.colorbar(fraction=0.046, pad=0.04)
-
-
-    yaxis = np.arange(0, ny)
-	# plot fit
-    plt.plot( nx*0.5 - 0.5*m*yaxis - 0.5*q, yaxis,'b-')
-	# plot data
-    plt.plot( nx*0.5 - 0.5*shift, y_of_ROIs, 'r.', markersize=3)
-	# draw vertical axis
-    plt.plot([0.5*nx, 0.5*nx], [0, ny-1], 'k--' )
-
-	# show results of the fit
-    ax2 = plt.subplot(1,2,2)
-    info_fit = 'shift = '  + "{:.3f}".format(m) + '*y + ' + "{:.3f}".format(q)
-    anchored_text2 = AnchoredText(info_fit, loc=9)
-    plt.plot(yaxis, m*yaxis + q, 'b-', label = 'fit')
-    plt.plot(y_of_ROIs, shift, 'r.', label='data')
-    plt.xlabel('$y$')
-    plt.ylabel('shift')
-    plt.title('Fit result')
-    ax2.add_artist(anchored_text2)
-
-    plt.legend()
-
-
-	#~ p0_r = np.roll(rotate(proj_0, theta, preserve_range=True,order=0, mode='edge'),    middle_shift , axis=1)
-	#~ p90_r = np.roll(rotate(proj_180, theta, preserve_range=True, order=0, mode='edge'),  middle_shift, axis=1)
-    p0_r = np.roll(ntp.rotate_sitk(proj_0, theta, interpolator=sitk.sitkLinear),    middle_shift , axis=1) 
-    p90_r = np.roll(ntp.rotate_sitk(proj_180, theta, interpolator=sitk.sitkLinear),  middle_shift, axis=1)
-
-
-	# FIGURE with difference image and histogram
-    plt.figure('Results of the rotation axis correction', figsize=(14,5), dpi=96)
-
-    plt.subplot(1,2,1)
-    plt.subplots_adjust(wspace=0.5)
-
-    diff2 = p0_r - p90_r[:,::-1]
-    mu = np.median(diff2)
-    s  = diff2.std()
-    plt.imshow(diff2 , cmap='gray', vmin=mu-s, vmax=mu+s)
-    plt.title(r'$P_0 - P^{flipped}_{\pi}$ after correction')
-    plt.colorbar(fraction=0.046, pad=0.04)
-
-
-
-	# histogram of squares of residuals
-    ax3 = plt.subplot(1,2,2)
-    nbins = 1000
-    row_marg = int(0.1*diff2.shape[0])
-    col_marg = int(0.1*diff2.shape[1])
-    absdif = np.abs(diff2)[row_marg:-row_marg, col_marg:-col_marg]
-    [binning, width] = np.linspace(absdif.min(), absdif.max(), nbins, retstep=True)
-    cc, edge = np.histogram(absdif, bins=binning)
-    plt.bar(edge[:-1]+width*0.5, cc, width, color='C3', edgecolor='k', log=True)
-    plt.gca().set_xscale("log")
-    plt.gca().set_yscale("log")
-    plt.xlim([0.01, absdif.max()])
-    plt.xlabel('Residuals')
-    plt.ylabel('Entries')
-    plt.title('Histogram of residuals')
-
-	# write text about residuals
-    res =  np.abs(diff2).mean()
-    info_res = r'$||P_0 - P^{flipped}_{\pi}||_1 / N_{pixel}$ = ' + "{:.4f}".format(res)
-    anchored_text3 = AnchoredText(info_res, loc=1)
-    ax3.add_artist(anchored_text3)
-
-    print("average of residuals  = ", res)
-
-
-
-    plt.show()
-'''
     
 
 def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift,theta):
@@ -339,29 +245,14 @@ def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift
 
     plt.show()
 
-
-def correction_axis_rotation (img_stack,shift,theta,datapath):
-    condition = True
-    while condition:
-    
-        ans = input('> Rotation axis found. Do you want to correct all projections?\
+def question ():
+    ans = input('> Rotation axis found. Do you want to correct all projections?\
          \n[Y] Yes, correct them.  \n[N] No, find it again.\
          \n[C] Cancel and abort the script.\
          \nType your answer and press [Enter] :')
-        if(ans=='Y' or ans=='y'):
-            plt.close('all')
-            condition = False
-            break
-        elif(ans=='N' or ans=='n'):
-            plt.close('all')
-            break
-        elif(ans=='C' or ans=='c'):
-            plt.close('all')
-            print('> Script aborted.')
-            sys.exit()
-        else:
-            print('Input not valid.')
-    
+    return ans
+
+def correction_axis_rotation (img_stack,shift,theta,datapath):
     
     print('> Correcting rotation axis misalignment...')
     for s in tqdm(range(0, img_stack.shape[0]), unit=' images'):
