@@ -1,6 +1,6 @@
 import argparse
 import configparser
-from sys import argv
+import sys
 from matplotlib.pyplot import plot
 import numpy as np
 import cv2
@@ -77,9 +77,24 @@ def main ():
         tomo_stack_norm = preprocessing_and_COR.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
         tomo_stack_norm_filtered = preprocessing_and_COR.outliers_filter(tomo_stack_norm,radius_neighborhood)
         tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm_filtered)
-        y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_filtered_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
-        preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        condition = True
+        while condition:
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_filtered_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+            
+            ans= preprocessing_and_COR.question()
+            if(ans=='Y' or ans=='y'):
+                condition = False
+                break
+            elif(ans=='N' or ans=='n'):
+                condition = True
+            elif(ans=='C' or ans=='c'):
+                print('> Script aborted.')
+                sys.exit()
+            else:
+                print('Input not valid.')
+
         tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm_filtered,middle_shift,theta,datapath)
         #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm_filtered,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
@@ -89,12 +104,25 @@ def main ():
         tomo_stack_norm = preprocessing_and_COR.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
         tomo_stack_norm_0, tomo_stack_norm_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm)
         
-        y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
-        preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm,middle_shift,theta,datapath)
+        condition = True
+        while condition:
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-        #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm,tomo_stack_norm_0,tomo_stack_norm_180,datapath)
+            ans= preprocessing_and_COR.question()
+            if(ans=='Y' or ans=='y'):
+                condition = False
+                break
+            elif(ans=='N' or ans=='n'):
+                condition = True
+            elif(ans=='C' or ans=='c'):
+                print('> Script aborted.')
+                sys.exit()
+            else:
+                print('Input not valid.')
+        
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm,middle_shift,theta,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if args.roi and not args.norm and args.out:
@@ -103,12 +131,25 @@ def main ():
         tomo_stack_filtered = preprocessing_and_COR.outliers_filter(tomo_stack_crop,radius_neighborhood)
         tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
         
-        y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_filtered_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
-        preprocessing_and_COR.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_filtered,middle_shift,theta,datapath)
+        condition = True
+        while condition:
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_filtered_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-        #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_filtered,tomo_stack_filtered_0,tomo_stack_filtered_180,datapath)
+            ans= preprocessing_and_COR.question()
+            if(ans=='Y' or ans=='y'):
+                condition = False
+                break
+            elif(ans=='N' or ans=='n'):
+                condition = True
+            elif(ans=='C' or ans=='c'):
+                print('> Script aborted.')
+                sys.exit()
+            else:
+                print('Input not valid.')
+        
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_filtered,middle_shift,theta,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if not args.roi and args.norm and args.out:
@@ -116,12 +157,25 @@ def main ():
         tomo_stack_norm_filtered = preprocessing_and_COR.outliers_filter(tomo_stack_norm,radius_neighborhood)
         tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm_filtered)
         
-        y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_filtered_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
-        preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm_filtered,middle_shift,theta,datapath)
+        condition = True
+        while condition:
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_filtered_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-        #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm_filtered,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,datapath)
+            ans= preprocessing_and_COR.question()
+            if(ans=='Y' or ans=='y'):
+                condition = False
+                break
+            elif(ans=='N' or ans=='n'):
+                condition = True
+            elif(ans=='C' or ans=='c'):
+                print('> Script aborted.')
+                sys.exit()
+            else:
+                print('Input not valid.')
+
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm_filtered,middle_shift,theta,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if args.roi and not args.norm and not args.out:
@@ -129,47 +183,99 @@ def main ():
         tomo_stack_crop = preprocessing_and_COR.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
         tomo_stack_crop_0,tomo_stack_crop_180 = preparation_data.projection_0_180(last_angle,tomo_stack_crop)
         
-        y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_crop_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_crop_0,tomo_stack_crop_180)
-        preprocessing_and_COR.graph_axis_rotation(tomo_stack_crop_0,tomo_stack_crop_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_crop,middle_shift,theta,datapath)
+        condition = True
+        while condition:
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_crop_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_crop_0,tomo_stack_crop_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_stack_crop_0,tomo_stack_crop_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-        #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_crop,tomo_stack_crop_0,tomo_stack_crop_180,datapath)
+            ans= preprocessing_and_COR.question()
+            if(ans=='Y' or ans=='y'):
+                condition = False
+                break
+            elif(ans=='N' or ans=='n'):
+                condition = True
+            elif(ans=='C' or ans=='c'):
+                print('> Script aborted.')
+                sys.exit()
+            else:
+                print('Input not valid.')
+        
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_crop,middle_shift,theta,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected)
 
     if not args.roi and args.norm and not args.out:
         tomo_stack_norm = preprocessing_and_COR.normalization_no_ROI(tomo_stack,dark_stack,flat_stack)
         tomo_stack_norm_0, tomo_stack_norm_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm)
         
-        y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
-        preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm,middle_shift,theta,datapath)
+        condition = True
+        while condition:
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_norm_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-        #tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_norm,tomo_stack_norm_0,tomo_stack_norm_180,datapath)
+            ans= preprocessing_and_COR.question()
+            if(ans=='Y' or ans=='y'):
+                condition = False
+                break
+            elif(ans=='N' or ans=='n'):
+                condition = True
+            elif(ans=='C' or ans=='c'):
+                print('> Script aborted.')
+                sys.exit()
+            else:
+                print('Input not valid.')
+        
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_norm,middle_shift,theta,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if not args.roi and not args.norm and args.out:
         tomo_stack_filtered = preprocessing_and_COR.outliers_filter(tomo_stack,radius_neighborhood)
         tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
         
-        y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_filtered_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
-        preprocessing_and_COR.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_filtered,middle_shift,theta,datapath)
+        condition = True
+        while condition:
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_filtered_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-        # tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack_filtered,tomo_stack_filtered_0,tomo_stack_filtered_180,datapath)
+            ans= preprocessing_and_COR.question()
+            if(ans=='Y' or ans=='y'):
+                condition = False
+                break
+            elif(ans=='N' or ans=='n'):
+                condition = True
+            elif(ans=='C' or ans=='c'):
+                print('> Script aborted.')
+                sys.exit()
+            else:
+                print('Input not valid.')
+        
+        tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack_filtered,middle_shift,theta,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if not args.roi and not args.norm and not args.out:
         tomo_stack_0,tomo_stack_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
         
-        y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_0,tomo_stack_180)
-        preprocessing_and_COR.graph_axis_rotation(tomo_stack_0,tomo_stack_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        condition = True
+        while condition:
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_0,tomo_stack_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_stack_0,tomo_stack_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        
+            ans= preprocessing_and_COR.question()
+            if(ans=='Y' or ans=='y'):
+                condition = False
+                break
+            elif(ans=='N' or ans=='n'):
+                condition = True
+            elif(ans=='C' or ans=='c'):
+                print('> Script aborted.')
+                sys.exit()
+            else:
+                print('Input not valid.')
+        
         tomo_stack_corrected = preprocessing_and_COR.correction_axis_rotation(tomo_stack,middle_shift,theta,datapath)
-
-        # tomo_stack_corrected = preprocessing_and_COR.correct_images(tomo_stack,tomo_stack_0,tomo_stack_180,datapath)
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
 
