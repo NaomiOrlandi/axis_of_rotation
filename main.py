@@ -1,12 +1,7 @@
 import argparse
 import configparser
 import sys
-from matplotlib.pyplot import plot
-import numpy as np
-import cv2
-import glob
 import preparation_data
-import os
 from image_slicer import plot_tracker
 import preprocessing_and_COR
 
@@ -34,6 +29,7 @@ def parse_args ():
     return args
 
 def main ():
+
     config = configparser.ConfigParser()
     config.read('paths.ini')
 

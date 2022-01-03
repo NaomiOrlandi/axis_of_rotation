@@ -1,14 +1,10 @@
 import matplotlib.pyplot as plt
 import neutompy as ntp
-from numpy.core.numeric import empty_like
 import image_slicer
-import cv2
 import numpy as np
 import os
 from matplotlib.offsetbox import AnchoredText
-from skimage.transform import rotate
 import SimpleITK as sitk
-import sys
 from tqdm import tqdm
 
 
@@ -28,9 +24,15 @@ def cropping (img_stack,rowmin,rowmax,colmin,colmax):
         raise ValueError ('rowmin and colmin must be less than rowmax and colmax rispectively')
 
 def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax):
-    ROI_coor = (rowmin,rowmax,colmin,colmax)
-    img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_coor=ROI_coor,crop_draw=False)
-    return img_stack_norm
+    if img_stack.shape == dark_stack.shape and img_stack.shape == flat_stack.shape:
+        ROI_coor = (rowmin,rowmax,colmin,colmax)
+        if rowmin <= rowmax and colmin <= colmax:
+            img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_coor=ROI_coor,crop_draw=False)
+            return img_stack_norm
+        else:
+            raise ValueError ('rowmin and colmin must be less than rowmax and colmax rispectively')
+    else:
+        raise ValueError('the stack of images (tomographic projections,flat images and dark images) must have the same dimensions')
 
 def normalization_no_ROI (img_stack,dark_stack,flat_stack):
     if img_stack.shape == dark_stack.shape and img_stack.shape == flat_stack.shape:
@@ -53,7 +55,7 @@ def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0, out=None)
         img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='bright',k=1)
         img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='dark',k=1)
     else:
-        print('Input not valid.')
+        raise IOError('Input not valid.')
     
     return img_stack_filtered
     
@@ -125,9 +127,10 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
         shift[y] = index_min
 
 	# perform linear fit
-    par = np.polyfit(y_of_ROIs, shift, deg=1)
-    m = par[0]
-    q = par[1]
+    par = np.polynomial.Polynomial.fit(y_of_ROIs, shift,1)
+    par = par.convert().coef
+    m = par[1]
+    q = par[0]
 
 	# compute the tilt angle
     theta = np.arctan(0.5*m)   # in radians
