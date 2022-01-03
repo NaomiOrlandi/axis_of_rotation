@@ -14,10 +14,10 @@ from hypothesis.extra.numpy import arrays
 #==================================
 
 @given(im_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(min_value=0,allow_nan=False, allow_infinity=False),fill=st.nothing()),
-       rowmin=st.integers(0,30),
-       rowmax=st.integers(0,30),
-       colmin=st.integers(0,30),
-       colmax=st.integers(0,30))
+       rowmin=st.integers(0,10),
+       rowmax=st.integers(0,10),
+       colmin=st.integers(0,10),
+       colmax=st.integers(0,10))
 def test_cropping_same_lenght (im_stack,rowmin,rowmax,colmin,colmax):
     if rowmax < rowmin or colmax < colmin:
         with pytest.raises(ValueError) as e:
@@ -31,11 +31,11 @@ def test_cropping_same_lenght (im_stack,rowmin,rowmax,colmin,colmax):
 
 
 
-@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(0,255,allow_nan=False),fill=st.nothing()),
-       flat_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(245,255,allow_nan=False),fill=st.nothing()),
-       dark_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(0,10,allow_nan=False),fill=st.nothing()))
+@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(0,25,allow_nan=False),fill=st.nothing()),
+       flat_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(23,25,allow_nan=False),fill=st.nothing()),
+       dark_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(0,2,allow_nan=False),fill=st.nothing()))
 def test_norm_no_ROI (tomo_stack,flat_stack,dark_stack):
-    if tomo_stack.shape == flat_stack.shape == dark_stack.shape:
+    if tomo_stack.shape == flat_stack.shape and tomo_stack.shape == dark_stack.shape:
         stack_norm = preprocessing_and_COR.normalization_no_ROI(tomo_stack,dark_stack,flat_stack)
         list=[]
         for i in range(stack_norm.shape[0]):
@@ -54,11 +54,64 @@ def test_norm_no_ROI (tomo_stack,flat_stack,dark_stack):
         assert str(err.value) == 'the stack of images (tomographic projections,flat images and dark images) must have the same dimensions'
 
 
-    
+@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(0,25,allow_nan=False),fill=st.nothing()),
+       flat_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(23,25,allow_nan=False),fill=st.nothing()),
+       dark_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(0,2,allow_nan=False),fill=st.nothing()),
+       rowmin=st.integers(0,5),
+       rowmax=st.integers(0,5),
+       colmin=st.integers(0,5),
+       colmax=st.integers(0,5))
+def test_norm_ROI (tomo_stack,flat_stack,dark_stack,rowmin,rowmax,colmin,colmax):
+    if tomo_stack.shape == flat_stack.shape and tomo_stack.shape == dark_stack.shape:
+        if rowmin <= rowmax and colmin <= colmax:
+            stack_norm = preprocessing_and_COR.normalization_no_ROI(tomo_stack,dark_stack,flat_stack)
+            list=[]
+            new_dim = (tomo_stack.shape[0],rowmax-rowmin,colmax-colmin)
+            for i in range(stack_norm.shape[0]):
+                max_norm = np.max(stack_norm[i,:,:])
+                max_no_norm = np.max(tomo_stack[i,rowmin:rowmax,colmin:colmax])
+                h= max_norm <= max_no_norm
+                list.append(h)
+                res=all(l for l in list)
+            assert res
+            for j in range(len(stack_norm.shape)):
+                assert new_dim[j] <= stack_norm.shape[j]
+
+@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(0,255,allow_nan=False),fill=st.nothing()),
+       ans = st.characters(),
+       neighboors = st.integers(1,10))
+def test_out_filter (tomo_stack,ans,neighboors):
+    ans_acc = ['b','B','d','D','a','A']
+    if any(ans == i for i in ans_acc):
+        with mock.patch('builtins.input',return_value=ans):
+            tomo_stack_filt = preprocessing_and_COR.outliers_filter(tomo_stack,neighboors)
+            for j in range(len(tomo_stack.shape)):
+                assert tomo_stack.shape[j] == tomo_stack_filt.shape[j]
+    else:
+        with mock.patch('builtins.input',return_value=ans):
+            with pytest.raises(IOError) as err:
+                preprocessing_and_COR.outliers_filter(tomo_stack,neighboors)
+            assert str(err.value) == 'Input not valid.'
+
+
+@given(projection=arrays(dtype=float,shape=(10,10),elements=st.floats(1,255,allow_nan=False),fill=st.nothing()),
+       ymin=st.integers(0,10),
+       ymax=st.integers(0,10))
+def test_find_offset_angle (projection,ymin,ymax):
+    yROI=np.arange(min(ymin,ymax),max(ymin,ymax),1)
+    m,q,shift,offset,middle_shift,theta= preprocessing_and_COR.find_shift_and_tilt_angle(yROI,projection,projection)
+    assert type(offset) == type(theta) == type(m) == type(q) == np.float64
+    assert type(middle_shift) == np.int32
+    assert type(shift) == np.ndarray
+    assert theta <= 90.0 and theta >= 90.0
 
 
 
 
+
+
+
+#5
 
 #==================================
 #UNIT TESTING
@@ -83,7 +136,7 @@ def test_cropping_bad_coordinates ():
     colmin = np.random.randint(colmax,20)
     
     with pytest.raises(ValueError) as e:
-        img_array_crp=preprocessing_and_COR.cropping(img_array,rowmin,rowmax,colmin,colmax)
+        preprocessing_and_COR.cropping(img_array,rowmin,rowmax,colmin,colmax)
     assert str(e.value) == 'rowmin and colmin must be less than rowmax and colmax rispectively'
 
 def test_normalization_no_ROI_max_val():
@@ -146,7 +199,7 @@ def test_normalization_ROI_max_val():
     list=[]
     for i in range(im_norm.shape[0]):
         max_norm = np.max(im_norm[i,:,:])
-        max_no_norm = np.max(imar[i,:,:])
+        max_no_norm = np.max(imar[i,rowmin:rowmax,colmin:colmax])
         h= max_norm <= max_no_norm
         list.append(h)
     res=all(l for l in list)
@@ -249,7 +302,7 @@ def test_outliers_filter_dark_spot_image_b():
         for i in range(3):
             assert np.max(im_stack_filt[i]) == 255.0 
             assert np.min(im_stack_filt[i]) == 0.0
-'''
+
 def test_find_shift_and_theta_obj_shifted_and_tilted ():
     path1='C:\\NAOMI_DATI\\UNIBO\\Magistrale\\Tesi\\Tomo_nota\\prova\\tomograf.tiff'
     im=cv2.imread(path1,cv2.IMREAD_GRAYSCALE)
@@ -259,11 +312,11 @@ def test_find_shift_and_theta_obj_shifted_and_tilted ():
     ymin=226
     ymax=844
     ystep=5
-    y_ot_ROIs= np.arange(ymin, ymax +1, ystep)
-    shift,theta=preprocessing_and_COR.find_shift_and_tilt_angle(y_ot_ROIs,im,im)
-    assert np.isclose(shift,shift_known,rtol=1e-1,atol=1e-2)
+    y_of_ROIs= np.arange(ymin, ymax +1, ystep)
+    m,q,shift,offset,middle_shift, theta=preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,im,im)
+    assert np.isclose(offset,shift_known,rtol=1e-1,atol=1e-2)
     assert np.isclose(theta,theta_known,rtol=1e-1,atol=1e-2)
 
-'''
 
 
+#13
