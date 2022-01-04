@@ -14,10 +14,10 @@ from hypothesis.extra.numpy import arrays
 #==================================
 
 @given(im_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,10),np.random.randint(1,10)),elements=st.floats(min_value=0,allow_nan=False, allow_infinity=False),fill=st.nothing()),
-       rowmin=st.integers(0,10),
-       rowmax=st.integers(0,10),
-       colmin=st.integers(0,10),
-       colmax=st.integers(0,10))
+       rowmin=st.integers(0,9),
+       rowmax=st.integers(0,9),
+       colmin=st.integers(0,9),
+       colmax=st.integers(0,9))
 def test_cropping_same_lenght (im_stack,rowmin,rowmax,colmin,colmax):
     if rowmax < rowmin or colmax < colmin:
         with pytest.raises(ValueError) as e:
@@ -95,15 +95,20 @@ def test_out_filter (tomo_stack,ans,neighboors):
 
 
 @given(projection=arrays(dtype=float,shape=(10,10),elements=st.floats(1,255,allow_nan=False),fill=st.nothing()),
-       ymin=st.integers(0,10),
-       ymax=st.integers(0,10))
+       ymin=st.integers(0,9),
+       ymax=st.integers(0,9))
 def test_find_offset_angle (projection,ymin,ymax):
-    yROI=np.arange(min(ymin,ymax),max(ymin,ymax),1)
-    m,q,shift,offset,middle_shift,theta= preprocessing_and_COR.find_shift_and_tilt_angle(yROI,projection,projection)
-    assert type(offset) == type(theta) == type(m) == type(q) == np.float64
-    assert type(middle_shift) == np.int32
-    assert type(shift) == np.ndarray
-    assert theta <= 90.0 and theta >= 90.0
+    yROI=np.arange(min(ymin,ymax),max(ymin,ymax)+1,1) #+1 to include the last value
+    if ymin == ymax:
+        with pytest.raises(ValueError) as err:
+            preprocessing_and_COR.find_shift_and_tilt_angle(yROI,projection,projection)
+        assert str(err.value) == 'ROI height must be greater than zero'
+    else:
+        m,q,shift,offset,middle_shift,theta= preprocessing_and_COR.find_shift_and_tilt_angle(yROI,projection,projection)
+        assert type(offset) == type(theta) == type(m) == type(q) == np.float64
+        assert type(middle_shift) == np.int32
+        assert type(shift) == np.ndarray
+        assert theta <= 90.0 and theta >= -90.0
 
 
 
