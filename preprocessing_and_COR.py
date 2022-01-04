@@ -305,12 +305,12 @@ def ROIs_for_correction(ref_proj,ystep=5):
     ref_proj : ndarray
         2D array representing the image where the user will select the ROIs
     ystep : int, optional
-        the value of y between one value of y coordinate and the successive one in the output array
+        the step between two successive y coordinates in the returned array
 
     Returns
     -------
     y_of_ROIs : ndarray
-        1D array containing the values of y coordinate included in the selected ROI
+        1D array containing the y coordinates included in the selected ROIs
     '''
     print('To compute the rotation axis position it is necessary to select one or multiple regions where the sample is present.\nHence you must draw the different regions vertically starting from top to bottom.')
     while True:
@@ -337,6 +337,48 @@ def ROIs_for_correction(ref_proj,ystep=5):
     return y_of_ROIs
 
 def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
+    '''
+    This method estimates the offset and the tilt angle of the rotation axis
+    respect to the detector using the projections at 0° and at 180°.
+    The latter is flipped horizontally and is compared with the projection
+    at 0°, computing a root mean square error for each x position and for each
+    y coordinate considered.
+    Hence the shift estimates for each y position are used to compute a polynomial 
+    fit of degree 1 obtaining the shift and the tilt angle of the axis of rotation.
+    Some algebrical operations are performed on these final values for costruction.
+    (References)
+
+    Parameters
+    ----------
+    y_of_ROIs : ndarray
+        1D array of the y coordinates of the ROIs selected for the correction,
+        with low noise and where the sample is visible
+    proj_0 : ndarray
+        2D array of the tomographic projection at 0°
+    proj_180 : ndarray
+        2D array of the tomographic projection at 180°
+    
+    Returns
+    -------
+    m : float
+        slope of the polynomial fit between the shift and the corresponding y coordinate
+    q : float
+        intercept of the polynomial fit between the shift and the corresponding y coordinate
+    shift : ndarray
+        1D array containing the shift estimate for each y coordinate of y_of_ROIs
+    offset : float
+        shift of the axis of rotation with respect to the central vertical axis of the images
+    middle_shift : int
+        the offset value converted to integer
+    theta : float
+        the tilt angle of the rotation axis with respect to the central vertical axis of the images (in degrees) 
+    
+    Raises
+    ------
+    ValueError
+        when the number of elements in y_of_ROIs is equal to 1, that is when the selected ROI
+        has null height.
+    '''
 
     if y_of_ROIs.size == 1:
         raise ValueError('ROI height must be greater than zero')
@@ -372,8 +414,8 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
 	    # perform linear fit
         par = np.polynomial.Polynomial.fit(y_of_ROIs, shift,1)
         par = par.convert().coef
-        m = par[1]
-        q = par[0]
+        m = par[1]   #slope
+        q = par[0]   #intercept
     
 	    # compute the tilt angle
         theta = np.arctan(0.5*m)   # in radians
@@ -392,6 +434,40 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     
 
 def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift,theta):
+    '''
+    This method shows two figures that report the results of find_shift_and_tilt_angle function.
+    In the first figure are shown the computed shift of the rotation axis from the polynomial fit
+    and the subtraction between the projection at 0° and the horizontal flip of the projection
+    at 180° (proj_0 - pro_180[:,::-1]) before the correction.
+    The second figure shows the difference image (proj_0 - pro_180[:,::-1]) after
+	the correction and the histogram of the square of residuals between 
+    proj_0 and the filpped proj_180.
+    
+    Parameters
+    ----------
+    proj_0 : ndarray
+        2D array of the tomographic projection at 0°
+    proj_180 : ndarray
+        2D array of the tomographic projection at 180°
+    y_of_ROIs : ndarray
+        1D array of the y coordinates of the ROIs selected for the correction,
+        with low noise and where the sample is visible
+    m : float
+        slope of the polynomial fit between the shift and the corresponding y coordinate
+        (ref. find_shift_and_tilt_angle function)
+    q : float
+        intercept of the polynomial fit between the shift and the corresponding y coordinate
+        (ref. find_shift_and_tilt_angle function)
+    shift : ndarray
+        1D array containing the shift estimate for each y coordinate of y_of_ROIs
+        (ref. find_shift_and_tilt_angle function)
+    offset : float
+        shift of the axis of rotation with respect to the central vertical axis of the images
+    middle_shift : int
+        the offset value converted to integer
+    theta : float
+        the tilt angle of the rotation axis with respect to the central vertical axis of the images (in degrees)
+    '''
 
     proj_180_flip = proj_180[:, ::-1]
 
@@ -441,9 +517,6 @@ def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift
 
     plt.legend()
 
-
-	#~ p0_r = np.roll(rotate(proj_0, theta, preserve_range=True,order=0, mode='edge'),    middle_shift , axis=1)
-	#~ p90_r = np.roll(rotate(proj_180, theta, preserve_range=True, order=0, mode='edge'),  middle_shift, axis=1)
     p0_r = np.roll(ntp.rotate_sitk(proj_0, theta, interpolator=sitk.sitkLinear),    middle_shift , axis=1) 
     p90_r = np.roll(ntp.rotate_sitk(proj_180, theta, interpolator=sitk.sitkLinear),  middle_shift, axis=1)
 
@@ -492,6 +565,13 @@ def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift
     plt.show()
 
 def question ():
+    '''
+    This function asks the user to choose whether to correct all the images [Y] 
+    according to the computed shift and tilt angle of the axis of rotation
+    with respect to the central vertical axis of the images,
+    to not correct the images [N] and find again the shift and tilt angle of the axis
+    of rotation, or to abort the script [C]
+    '''
     ans = input('> Rotation axis found. Do you want to correct all projections?\
          \n[Y] Yes, correct them.  \n[N] No, find it again.\
          \n[C] Cancel and abort the script.\
@@ -499,6 +579,31 @@ def question ():
     return ans
 
 def correction_axis_rotation (img_stack,shift,theta,datapath):
+    '''
+    This function perform the correction of all the images in the stack,
+    according to the computed shift and tilt angle of the axis of rotation
+    with respect to the central vertical axis of the images.
+    The method also open the file data.txt placed in the path expressed by 
+    datapath and write there the values of the shift and the tilt angle of
+    the axis of rotation.
+    Finally it returns the stack of corrected images.
+
+    Parameters
+    ----------
+    img_stack : ndarray
+        3D array containing the tomographic projection images to correct
+    shift : int
+        shift of the axis of rotation with respect to the central vertical axis of the images
+    theta : float
+        the tilt angle of the rotation axis with respect to the central vertical axis of the images (in degrees)
+    datapath : str
+        string representing the directory path where data.txt is placed
+    
+    Returns
+    -------
+    img_stack : ndarray
+        3D array containing the corrected tomographic images
+    '''
     
     print('> Correcting rotation axis misalignment...')
     for s in tqdm(range(0, img_stack.shape[0]), unit=' images'):
@@ -512,5 +617,18 @@ def correction_axis_rotation (img_stack,shift,theta,datapath):
     return img_stack
 
 def save_images (new_fname,img_stack,digits):
+    '''
+    This method saves the stack of corrected images in the directory
+    and with the prefix of the file names expressed by new_fname.
+
+    Parameters
+    ----------
+    new_fname : str
+        string representing the new files (.tiff images) path and the prefix of their name
+    img_stack : ndarray
+        3D array of the corrected images
+    digits : int
+        number of digits used for the numbering of the images
+    is '''
     print('Saving the corrected images...')
     ntp.write_tiff_stack(new_fname,img_stack, axis=0, start=0, croi=None, digit=digits, dtype=None, overwrite=False)
