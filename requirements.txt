@@ -1,0 +1,29 @@
+neutompy
+os
+glob
+sys
+argparse
+configparser
+pytest
+hypothesis
+
+requirements for neutompy:
+numpy
+numexpr
+matplotlib
+astropy
+tifffile
+opencv-python
+read-roi
+cython
+scipy
+six
+scikit-image==0.15.0
+SimpleITK
+PyWavelets
+tqdm
+
+reference for neutompy installation:
+https://pypi.org/project/neutompy/
+note:instead of creating a conda environment with python 3.5 or 3.6 i worked with python 3.8.10.
+     The important is to install scikit-image==0.15.0
