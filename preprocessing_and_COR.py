@@ -3,17 +3,61 @@ import neutompy as ntp
 import image_slicer
 import numpy as np
 import os
+import cv2
 from matplotlib.offsetbox import AnchoredText
 import SimpleITK as sitk
 from tqdm import tqdm
 
 
-def draw_ROI (proj_0,datapath):
-    rowmin,rowmax,colmin,colmax = ntp.draw_ROI(proj_0, 'ROI from projection_0', ratio=0.85)
+
+def draw_ROI (img,title,ratio=0.85):
+    if not (0 < ratio <= 1):
+        raise ValueError('The variable ratio must be between 0 and 1.')
+
+    if (img.ndim != 2):
+        raise ValueError("The image array must be two-dimensional.")
+
+	# window size settings
+    (width, height) = ntp.get_screen_resolution()
+    scale_width = width / img.shape[1]
+    scale_height = height / img.shape[0]
+    scale = min(scale_width, scale_height)*ratio
+    window_width = int(img.shape[1] * scale)
+    window_height = int(img.shape[0] * scale)
+
+    img = img.astype(np.float32)
+    mu = np.nanmedian(img.ravel())
+    finite_vals = np.nonzero(np.isfinite(img))
+    s  = img[finite_vals].std()
+    img = img/(mu+2*s)  # normalization can be improved
+    imgshow = np.clip(img, 0, 1.0)
+
+    condition = True
+    while condition:
+        cv2.namedWindow(title, cv2.WINDOW_NORMAL)
+        cv2.resizeWindow(title,  window_width, window_height)
+        r = cv2.selectROI(title, imgshow, showCrosshair = False, fromCenter = False)
+
+        if (r == (0,0,0,0)):
+            condition = True
+            print('> ROI cancelled')
+        elif r[2] == 0 or r[3] == 0:
+            condition = True
+            print('> ROI cancelled (ROI width or height must be greater that zero)')
+        else:
+            condition = False
+			#print('> ROI selected ')
+            rowmin, rowmax, colmin, colmax = r[1], r[1] + r[3], r[0], r[0] + r[2]
+            print( 'ROI selected: ymin =', rowmin, ', ymax =', rowmax, ', xmin =', colmin, ', xmax =', colmax)
+            cv2.destroyWindow(title)
+
+    return rowmin, rowmax, colmin, colmax
+
+def save_ROI (rowmin,rowmax,colmin,colmax,datapath):
     file_data = open(os.path.join(datapath,'data.txt'),'a')
     file_data.write('rowmin {0} \nrowmax {1} \ncolmin {2} \ncolmax {3}'.format(rowmin,rowmax,colmin,colmax))
     file_data.close()
-    return rowmin,rowmax,colmin,colmax
+
 
 def cropping (img_stack,rowmin,rowmax,colmin,colmax):
     if rowmin <= rowmax and colmin <= colmax:
@@ -92,59 +136,65 @@ def ROIs_for_correction(ref_proj,ystep=5):
 		# print number of rois
         print('> Select ROI ' + str(i+1))
         title = 'Select region n. : ' + str(i+1)
-        ymin, ymax, xmin, xmax = ntp.draw_ROI(ref_proj, title)
+        ymin, ymax, xmin, xmax = draw_ROI(ref_proj, title)
         
         y_ROI = np.arange(ymin, ymax +1, ystep)
         y_of_ROIs = np.concatenate((y_of_ROIs, y_ROI), axis=0)
+        
     return y_of_ROIs
 
 def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
+
+    if y_of_ROIs.size == 1:
+        raise ValueError('ROI height must be greater than zero')
+    else:
     
-    tmin = - proj_0.shape[1]//2
-    tmax =   proj_0.shape[1] - proj_0.shape[1]//2
+        tmin = - proj_0.shape[1]//2
+        tmax =   proj_0.shape[1] - proj_0.shape[1]//2
 
-    ny = proj_0.shape[0]
-    nx = proj_0.shape[1]
+        ny = proj_0.shape[0]
+        nx = proj_0.shape[1]
 
-    shift = np.zeros(y_of_ROIs.size)
-    proj_180_flip = proj_180[:, ::-1]
+        shift = np.zeros(y_of_ROIs.size)
+        proj_180_flip = proj_180[:, ::-1]
 
-    for y, slc in enumerate(y_of_ROIs):
+        for y, slc in enumerate(y_of_ROIs):
 
-        minimum = 1e7
-        index_min = 0
+            minimum = 1e7
+            index_min = 0
 
-		# loop over the shift
-        for t in range(tmin, tmax + 1):
+		     # loop over the shift
+            for t in range(tmin, tmax + 1):
 
-            posy = np.round(slc).astype(np.int32)
-            rmse = np.square( (np.roll(proj_0[posy], t, axis = 0) - proj_180_flip[posy]) ).sum() / nx
+                posy = np.round(slc).astype(np.int32)
+                rmse = np.square( (np.roll(proj_0[posy], t, axis = 0) - proj_180_flip[posy]) ).sum() / nx
 
-            if(rmse <= minimum):
-                minimum = rmse
-                index_min = t
+                if(rmse <= minimum):
+                    minimum = rmse
+                    index_min = t
 
-        shift[y] = index_min
+            shift[y] = index_min
+    
 
-	# perform linear fit
-    par = np.polynomial.Polynomial.fit(y_of_ROIs, shift,1)
-    par = par.convert().coef
-    m = par[1]
-    q = par[0]
+	    # perform linear fit
+        par = np.polynomial.Polynomial.fit(y_of_ROIs, shift,1)
+        par = par.convert().coef
+        m = par[1]
+        q = par[0]
+    
+	    # compute the tilt angle
+        theta = np.arctan(0.5*m)   # in radians
+        theta = np.rad2deg(theta)
 
-	# compute the tilt angle
-    theta = np.arctan(0.5*m)   # in radians
-    theta = np.rad2deg(theta)
-
-	# compute the shift
-    offset       = (np.round(m*ny*0.5 + q)).astype(np.int32)*0.5
-    middle_shift = (np.round(m*ny*0.5 + q)).astype(np.int32)//2
+	    # compute the shift
+        offset       = (np.round(m*ny*0.5 + q)).astype(np.int32)*0.5
+        middle_shift = (np.round(m*ny*0.5 + q)).astype(np.int32)//2
 
 
-    print("Rotation axis Found!")
-    print("offset =", offset, "   tilt angle =", theta, "°"  )
+        print("Rotation axis Found!")
+        print("offset =", offset, "   tilt angle =", theta, "°"  )
 
-    return m,q,shift,offset,middle_shift, theta
+        return m,q,shift,offset,middle_shift, theta
 
     
 
