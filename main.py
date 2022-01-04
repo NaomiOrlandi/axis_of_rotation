@@ -69,7 +69,8 @@ def main ():
     
     if args.roi and args.norm and args.out:
 
-        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0,datapath)
+        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0,'selection of ROI')
+        preprocessing_and_COR.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
         tomo_stack_norm = preprocessing_and_COR.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
         tomo_stack_norm_filtered = preprocessing_and_COR.outliers_filter(tomo_stack_norm,radius_neighborhood)
         tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm_filtered)
@@ -96,7 +97,8 @@ def main ():
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
         
     if args.roi and args.norm and not args.out:
-        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0,datapath)
+        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0,'selection of ROI')
+        preprocessing_and_COR.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
         tomo_stack_norm = preprocessing_and_COR.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
         tomo_stack_norm_0, tomo_stack_norm_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm)
         
@@ -122,7 +124,8 @@ def main ():
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if args.roi and not args.norm and args.out:
-        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0,datapath)
+        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0,'selection of ROI')
+        preprocessing_and_COR.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
         tomo_stack_crop = preprocessing_and_COR.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
         tomo_stack_filtered = preprocessing_and_COR.outliers_filter(tomo_stack_crop,radius_neighborhood)
         tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
@@ -175,7 +178,8 @@ def main ():
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if args.roi and not args.norm and not args.out:
-        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0,datapath)
+        rowmin,rowmax,colmin,colmax = preprocessing_and_COR.draw_ROI(tomo_0,'selection of ROI')
+        preprocessing_and_COR.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
         tomo_stack_crop = preprocessing_and_COR.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
         tomo_stack_crop_0,tomo_stack_crop_180 = preparation_data.projection_0_180(last_angle,tomo_stack_crop)
         
