@@ -11,6 +11,39 @@ from tqdm import tqdm
 
 
 def draw_ROI (img,title,ratio=0.85):
+    '''
+    This method allows to select interactively a rectangular a region of interest (ROI)
+    on an image and returns the coordinates of the ROI.
+    The ROI should have width and height greater than zero to be selected.
+    
+    Parameters
+    ----------
+    img : ndarray
+        2D array representing the image
+    title : str
+        title of the window where the user will select the ROI
+    ratio : float,optional
+        The filling ratio of the window respect to the screen resolution.
+        It must be a number between 0 and 1. The default value is 0.85.
+        
+    Returns
+    -------
+    rowmin : int
+        The minimum row coordinate
+    rowmax : int
+        The maximum row coordinate
+    colmin : int
+        The minimum column coordinate
+    colmax : int
+        The maximum column coordinate
+        
+    Raises
+    ------
+    ValueError
+        if ratio is not greater than 0 and less or equal to 1
+    ValueError
+        if img is not a 2D array
+    '''
     if not (0 < ratio <= 1):
         raise ValueError('The variable ratio must be between 0 and 1.')
 
@@ -54,12 +87,56 @@ def draw_ROI (img,title,ratio=0.85):
     return rowmin, rowmax, colmin, colmax
 
 def save_ROI (rowmin,rowmax,colmin,colmax,datapath):
+    '''
+    This method create or open a file called data.txt in the path datapath
+    and save the coordinates of the ROI.
+    
+    Parameters
+    ----------
+    rowmin : int
+        The minimum row coordinate
+    rowmax : int
+        The maximum row coordinate
+    colmin : int
+        The minimum column coordinate
+    colmax : int
+        The maximum column coordinate
+    datapath : str
+        string representing the directory path where to create data.txt 
+    '''
     file_data = open(os.path.join(datapath,'data.txt'),'a')
     file_data.write('rowmin {0} \nrowmax {1} \ncolmin {2} \ncolmax {3}'.format(rowmin,rowmax,colmin,colmax))
     file_data.close()
 
 
 def cropping (img_stack,rowmin,rowmax,colmin,colmax):
+    '''
+    This method crop all the images contained in a stack according to
+    specific coordinates. It returns the new stack with the cropped images.
+    
+    Parameters
+    ----------
+    img_stack : ndarray
+        3D array representing the stack of gray scaled images
+    rowmin : int
+        The minimum row coordinate
+    rowmax : int
+        The maximum row coordinate
+    colmin : int
+        The minimum column coordinate
+    colmax : int
+        The maximum column coordinate
+    
+    Returns
+    -------
+    img_stack_cropped : ndarray
+        3D array containig the cropped images
+    
+    Raises
+    ------
+    ValueError
+        if rowmin>rowmax or colmin>colmax
+    '''
     if rowmin <= rowmax and colmin <= colmax:
         for i in range(img_stack.shape[0]):
             img_stack_cropped = img_stack[:,rowmin:rowmax,colmin:colmax].astype(np.float32)
@@ -68,8 +145,50 @@ def cropping (img_stack,rowmin,rowmax,colmin,colmax):
         raise ValueError ('rowmin and colmin must be less than rowmax and colmax rispectively')
 
 def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax):
+    '''
+    This method computes the normalization of all the the images (tomographic projections)
+    of a stack, using a stack of dark images and one of flat images.
+    It will consider a ROI of all the images, whose coordinates are taken as parameters,
+    and returns the new stack or normalized images.
+    The fuction used is the neutompy.normalize_proj(proj, dark, flat,  proj_180=None, out=None,
+    dose_file='', dose_coor=(), dose_draw=False,crop_file='', crop_coor=ROI_coor, crop_draw=False,
+    scattering_bias=0.0, minus_log_lowest_val=None,min_denom=1.0e-6,  min_ratio=1e-6, max_ratio=10.0,
+    mode='mean', log=False,  sino_order=False, show_opt='mean'),
+    where the dose ROI is not considered,but the normalization
+    is performed only on a region of interest (crop ROI) of all projections.
+    The coordinates of the ROI are an input of the method.
+
+    Parameters
+    ----------
+    img_stack : ndarray
+        3D array containing the projection images
+    dark_stack : ndarray
+        3D array containing the dark images
+    flat_stack : ndarray
+        3D array containing the flat images
+    rowmin : int
+        The minimum row coordinate of the ROI
+    rowmax : int
+        The maximum row coordinate of the ROI
+    colmin : int
+        The minimum column coordinate of the ROI
+    colmax : int
+        The maximum column coordinate of the ROI
+    
+    Returns
+    -------
+    img_stack_norm : ndarray
+        3D array containing the normalized images, each with the ROI dimensions
+    
+    Raises
+    ------
+    ValueError
+        if rowmin>rowmax or colmin>colmax
+    ValueError
+        if img_stack, dark_stack and flat_stack have different dimensions
+    '''
     if img_stack.shape == dark_stack.shape and img_stack.shape == flat_stack.shape:
-        ROI_coor = (rowmin,rowmax,colmin,colmax)
+        ROI_coor = (rowmin,rowmax,colmin,colmax) #create a tuple for the coordinates of the ROI
         if rowmin <= rowmax and colmin <= colmax:
             img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_coor=ROI_coor,crop_draw=False)
             return img_stack_norm
@@ -79,46 +198,120 @@ def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin
         raise ValueError('the stack of images (tomographic projections,flat images and dark images) must have the same dimensions')
 
 def normalization_no_ROI (img_stack,dark_stack,flat_stack):
+    '''
+    This method computes the normalization of all the the images (tomographic projections)
+    of a stack, using a stack of dark images and one of flat images.
+    It returns the new stack or normalized images.
+    The fuction used is the neutompy.normalize_proj(proj, dark, flat,  proj_180=None, out=None,
+    dose_file='', dose_coor=(), dose_draw=False,crop_file='', crop_coor=(), crop_draw=False,
+    scattering_bias=0.0, minus_log_lowest_val=None,min_denom=1.0e-6,  min_ratio=1e-6, max_ratio=10.0,
+    mode='mean', log=False,  sino_order=False, show_opt='mean'),
+    where the dose ROI and the crop ROI are not considered.
+
+    Parameters
+    ----------
+    img_stack : ndarray
+        3D array containing the projection images
+    dark_stack : ndarray
+        3D array containing the dark images
+    flat_stack : ndarray
+        3D array containing the flat images
+
+    Returns
+    -------
+    img_stack_norm : ndarray
+        3D array containing the normalized images
+
+    Raises
+    ------
+    ValueError
+        if img_stack, dark_stack and flat_stack have different dimensions
+    '''
     if img_stack.shape == dark_stack.shape and img_stack.shape == flat_stack.shape:
         img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_draw=False)
         return img_stack_norm
     else:
         raise ValueError('the stack of images (tomographic projections,flat images and dark images) must have the same dimensions')
 
-def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0, out=None):
+def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0):
+    '''
+    This method removes bright or dark or both outliers from a stack of images.
+    The algorithm elaborates 2d images and the filtering is iterated over all
+    images in the stack.
+    The function used is neutompy.remove_outliers_stack() and it replaces a pixel
+    by the median of the pixels in the 2d neighborhood
+    if it deviates from the median by more than a certain value (k*threshold).
+    The threshold used is 'local', hence the local standard deviation map is taken
+    into account.
+    The user will be asked to choose the type of outliers to remove before the
+    filtering.
+
+    Parameters
+    ----------
+    img_stack : ndarray
+        3D array containing the images to filter
+    radius_2D_neighborhood : int or tuple of int
+        The radius of the 2D neighborhood. The radius is defined separately for
+        each dimension as the number of pixels that the neighborhood extends
+        outward from the center pixel
+    axis : int, optional
+        The axis along wich the outlier removal is iterated.
+        Default value is 0
+    k : float, optional
+        A pixel is replaced by the median of the pixels in the neighborhood
+        if it deviates from the median by more than k*threshold.
+        Default value is 1.0.
+
+    Returns
+    -------
+    img_stack_filtered : ndarray
+        3D array containing the filtered images
+
+    Raises
+    ------
+    IOError
+        if the user input is different from 'b','B','d','D','a' or 'A'
+    '''
     ans = input('> Do you want to perform a filtering from bright outliers,dark outliers or both?\
      \n[B] filter just bright outliers\
      \n[D] filter just dark outliers\
      \n[A] filter both bright and dark outliers\
      \nType your answer and press [Enter] :')
     if ans == 'B' or ans == 'b':
-        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='bright',k=1)
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=axis,k=k,outliers='bright')
     elif ans == 'D' or ans == 'd':
-        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='dark',k=1)
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=axis,k=k,outliers='dark')
     elif ans == 'A' or ans == 'a':
-        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='bright',k=1)
-        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=0,outliers='dark',k=1)
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=axis,k=k,outliers='bright')
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=axis,k=k,outliers='dark')
     else:
         raise IOError('Input not valid.')
     
     return img_stack_filtered
     
 
-#def find_center_of_rotation (proj_0, proj_180, nroi=None, ref_proj=None, ystep=5, ShowResults=False):
-#    middle_shift,theta = ntp.find_COR(proj_0, proj_180, nroi=None, ref_proj=None, ystep=5, ShowResults=False)
-#    return middle_shift,theta
-
-#def correct_images (img_stack, proj_0, proj_180,datapath, show_opt='zero', shift=None, theta=None, nroi=None, ystep=5):
-#    img_stack_corrected,shift,theta = ntp.correction_COR(img_stack, proj_0, proj_180, show_opt='zero', shift=None, theta=None, nroi=None, ystep=5)
-#    image_slicer.plot_tracker(img_stack_corrected)
-#    file_data = open(os.path.join(datapath,'data.txt'),'a')
-#    file_data.write('\nshift {0} \ntilt angle {1}'.format(shift,theta))
-#    file_data.close()
-#    return img_stack_corrected
-
-
-
 def ROIs_for_correction(ref_proj,ystep=5):
+    '''
+    This method allows to select one or multiple ROIs in the projections
+    that will be considered when searching for the axis of rotation
+    offset and tilt angle in other functions.
+    The suggestion is to select the regions where the sample is visible
+    and where there is as little noise as possible.
+    The method returns a 1D array containing the values of y coordinate
+    selected in the ROIs with a step defined by ystep. 
+
+    Parameters
+    ----------
+    ref_proj : ndarray
+        2D array representing the image where the user will select the ROIs
+    ystep : int, optional
+        the value of y between one value of y coordinate and the successive one in the output array
+
+    Returns
+    -------
+    y_of_ROIs : ndarray
+        1D array containing the values of y coordinate included in the selected ROI
+    '''
     print('To compute the rotation axis position it is necessary to select one or multiple regions where the sample is present.\nHence you must draw the different regions vertically starting from top to bottom.')
     while True:
         nroi = input('> Insert the number of regions to select: ')
