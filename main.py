@@ -255,13 +255,12 @@ def main ():
         preprocessing_and_COR.save_images(new_filepath,tomo_stack_corrected,digits)
 
     if not args.roi and not args.norm and not args.out:
-        tomo_stack_0,tomo_stack_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
         
         condition = True
         while condition:
-            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_stack_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_0,tomo_stack_180)
-            preprocessing_and_COR.graph_axis_rotation(tomo_stack_0,tomo_stack_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+            y_of_ROIs = preprocessing_and_COR.ROIs_for_correction(tomo_0,ystep=5)
+            m,q,shift,offset,middle_shift, theta = preprocessing_and_COR.find_shift_and_tilt_angle(y_of_ROIs,tomo_0,tomo_180)
+            preprocessing_and_COR.graph_axis_rotation(tomo_0,tomo_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
             ans= preprocessing_and_COR.question()
             if(ans=='Y' or ans=='y'):
