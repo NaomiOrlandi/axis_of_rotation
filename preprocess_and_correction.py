@@ -341,12 +341,19 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     This method estimates the offset and the tilt angle of the rotation axis
     respect to the detector using the projections at 0° and at 180°.
     The latter is flipped horizontally and is compared with the projection
-    at 0°, computing a root mean square error for each x position and for each
+    at 0°, computing a root mean square error for each x position at each
     y coordinate considered.
     Hence the shift estimates for each y position are used to compute a polynomial 
-    fit of degree 1 obtaining the shift and the tilt angle of the axis of rotation.
+    fit of degree 1, obtaining the shift and the tilt angle of the axis of rotation.
     Some algebrical operations are performed on these final values for costruction.
-    (References)
+    
+    References:
+    [1] M. Yang, H. Gao, X. Li, F. Meng, D. Wei, "A new method todetermine the center
+        of rotation shift in 2DCT scanning systemusing image cross correlation",
+        NDT&E International 46 (2012) 48-54
+    [2] Anders P. Kaestner, "MuhRec—A new tomography reconstructor",
+        Nuclear Instruments and Methods in Physics Research A 651 (2011) 156-160,
+        section 2.2
 
     Parameters
     ----------
@@ -462,9 +469,9 @@ def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift
         1D array containing the shift estimate for each y coordinate of y_of_ROIs
         (ref. find_shift_and_tilt_angle function)
     offset : float
-        shift of the axis of rotation with respect to the central vertical axis of the images
+        shift of the axis of rotation with respect to the central vertical axis of the images (in px)
     middle_shift : int
-        the offset value converted to integer
+        the offset value converted to integer 
     theta : float
         the tilt angle of the rotation axis with respect to the central vertical axis of the images (in degrees)
     '''
@@ -581,7 +588,7 @@ def question ():
 def correction_axis_rotation (img_stack,shift,theta,datapath):
     '''
     This function perform the correction of all the images in the stack,
-    according to the computed shift and tilt angle of the axis of rotation
+    according to the shift and tilt angle of the axis of rotation
     with respect to the central vertical axis of the images.
     The method also open the file data.txt placed in the path expressed by 
     datapath and write there the values of the shift and the tilt angle of
@@ -593,7 +600,7 @@ def correction_axis_rotation (img_stack,shift,theta,datapath):
     img_stack : ndarray
         3D array containing the tomographic projection images to correct
     shift : int
-        shift of the axis of rotation with respect to the central vertical axis of the images
+        shift of the axis of rotation with respect to the central vertical axis of the images (in px)
     theta : float
         the tilt angle of the rotation axis with respect to the central vertical axis of the images (in degrees)
     datapath : str
@@ -619,7 +626,7 @@ def correction_axis_rotation (img_stack,shift,theta,datapath):
 def save_images (new_fname,img_stack,digits):
     '''
     This method saves the stack of corrected images in the directory
-    and with the prefix of the file names expressed by new_fname.
+    and with the filename prefix expressed by new_fname.
 
     Parameters
     ----------
@@ -629,6 +636,6 @@ def save_images (new_fname,img_stack,digits):
         3D array of the corrected images
     digits : int
         number of digits used for the numbering of the images
-    is '''
+    '''
     print('Saving the corrected images...')
     ntp.write_tiff_stack(new_fname,img_stack, axis=0, start=0, croi=None, digit=digits, dtype=None, overwrite=False)
