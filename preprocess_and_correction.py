@@ -137,6 +137,7 @@ def cropping (img_stack,rowmin,rowmax,colmin,colmax):
     ValueError
         if rowmin>rowmax or colmin>colmax
     '''
+    print('> Cropping the images...')
     if rowmin <= rowmax and colmin <= colmax:
         for i in range(img_stack.shape[0]):
             img_stack_cropped = img_stack[:,rowmin:rowmax,colmin:colmax].astype(np.float32)
@@ -346,7 +347,7 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     Hence the shift estimates for each y position are used to compute a polynomial 
     fit of degree 1, obtaining the shift and the tilt angle of the axis of rotation.
     Some algebrical operations are performed on these final values for costruction.
-    
+
     References:
     [1] M. Yang, H. Gao, X. Li, F. Meng, D. Wei, "A new method todetermine the center
         of rotation shift in 2DCT scanning systemusing image cross correlation",
@@ -421,8 +422,13 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
 	    # perform linear fit
         par = np.polynomial.Polynomial.fit(y_of_ROIs, shift,1)
         par = par.convert().coef
-        m = par[1]   #slope
-        q = par[0]   #intercept
+        if len(par) == 2:      #case in which both offset and tilt angle are different from 0
+            m = par[1]         #slope
+            q = par[0]         #intercept
+        elif len(par) == 1:    #case in which the tilt angle is 0°
+            m = 0.0
+            q = par[0]
+
     
 	    # compute the tilt angle
         theta = np.arctan(0.5*m)   # in radians
