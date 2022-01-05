@@ -25,5 +25,23 @@ tqdm
 
 reference for neutompy installation:
 https://pypi.org/project/neutompy/
-note:instead of creating a conda environment with python 3.5 or 3.6 i worked with python 3.8.10.
+note:instead of creating a conda environment with python 3.5 or 3.6, I worked with python 3.8.10.
      The important is to install scikit-image==0.15.0
+
+Important!
+Once neutompy library in installed, open the preproc.py file and add 'rotate_sitk' inside
+the list __all__ , obtaining
+
+__all__     = ['draw_ROI',
+			   'normalize_proj',
+			   'log_transform',
+			   'find_COR',
+			   'correction_COR',
+			   'remove_outliers',
+			   'remove_outliers_stack',
+			   'remove_stripe',
+			   'remove_stripe_stack',
+			   'simple_BHC',
+			   'zero_clipping_value',
+			   'rotate_sitk'
+			  ]
