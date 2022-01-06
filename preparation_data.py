@@ -6,7 +6,7 @@ import os
 #reader of the images that returns a list of images
 def reader_gray_images (filepath):
     '''
-    This method read the .tiff gray scaled images contained in the directory
+    This function reads the .tiff gray scaled images contained in the directory
     whose path is expressed by filepath and returns a list of two dimensional
     arrays representing the images
     
@@ -46,7 +46,7 @@ def reader_gray_images (filepath):
 #image list is transformed in a 3D array
 def create_array (img_list,img_list_tomo):
     '''
-    This method transform a list of two dimensional arrays 
+    This function transforms a list of two dimensional arrays 
     (representing gray scaled images) into a three dimensional array.
     The number of elements in the list can be 1 or the same of
     another list taken as a reference.
@@ -93,7 +93,7 @@ def create_array (img_list,img_list_tomo):
 #define tomographic projections at angle 0 and 180 degrees
 def projection_0_180 (angle,img_array):
     '''
-    This method takes a stack of images and returns the first one
+    This function takes a stack of images and returns the first one
     and the last or the middle one, depending if the tomographic 
     acquisition is performed with a maximum angle rispectively of 180° or 360°.
     
@@ -124,5 +124,5 @@ def projection_0_180 (angle,img_array):
         proj_180 = img_array[int(img_array.shape[0]-1),:,:]
         return proj_0,proj_180
     else:
-        raise ValueError('the maximum angle for the tomography should be or 180 or 360 degrees')
+        raise ValueError('the maximum angle for the tomography must be 180 or 360 degrees')
     

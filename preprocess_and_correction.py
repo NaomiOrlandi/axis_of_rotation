@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 def draw_ROI (img,title,ratio=0.85):
     '''
-    This method allows to select interactively a rectangular a region of interest (ROI)
+    This function allows to select interactively a rectangular a region of interest (ROI)
     on an image and returns the coordinates of the ROI.
     The ROI should have width and height greater than zero to be selected.
     
@@ -88,7 +88,7 @@ def draw_ROI (img,title,ratio=0.85):
 
 def save_ROI (rowmin,rowmax,colmin,colmax,datapath):
     '''
-    This method create or open a file called data.txt in the path datapath
+    This function creates or open a file called data.txt in the path datapath
     and save the coordinates of the ROI.
     
     Parameters
@@ -111,7 +111,7 @@ def save_ROI (rowmin,rowmax,colmin,colmax,datapath):
 
 def cropping (img_stack,rowmin,rowmax,colmin,colmax):
     '''
-    This method crop all the images contained in a stack according to
+    This function crops all the images contained in a stack according to
     specific coordinates. It returns the new stack with the cropped images.
     
     Parameters
@@ -147,7 +147,7 @@ def cropping (img_stack,rowmin,rowmax,colmin,colmax):
 
 def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax):
     '''
-    This method computes the normalization of all the the images (tomographic projections)
+    This function computes the normalization of all the the images (tomographic projections)
     of a stack, using a stack of dark images and one of flat images.
     It will consider a ROI of all the images, whose coordinates are taken as parameters,
     and returns the new stack or normalized images.
@@ -200,7 +200,7 @@ def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin
 
 def normalization_no_ROI (img_stack,dark_stack,flat_stack):
     '''
-    This method computes the normalization of all the the images (tomographic projections)
+    This function computes the normalization of all the the images (tomographic projections)
     of a stack, using a stack of dark images and one of flat images.
     It returns the new stack or normalized images.
     The fuction used is the neutompy.normalize_proj(proj, dark, flat,  proj_180=None, out=None,
@@ -236,7 +236,7 @@ def normalization_no_ROI (img_stack,dark_stack,flat_stack):
 
 def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0):
     '''
-    This method removes bright or dark or both outliers from a stack of images.
+    This function removes bright or dark or both outliers from a stack of images.
     The algorithm elaborates 2d images and the filtering is iterated over all
     images in the stack.
     The function used is neutompy.remove_outliers_stack() and it replaces a pixel
@@ -293,7 +293,7 @@ def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0):
 
 def ROIs_for_correction(ref_proj,ystep=5):
     '''
-    This method allows to select one or multiple ROIs in the projections
+    This function allows to select one or multiple ROIs in the projections
     that will be considered when searching for the axis of rotation
     offset and tilt angle in other functions.
     The suggestion is to select the regions where the sample is visible
@@ -339,7 +339,7 @@ def ROIs_for_correction(ref_proj,ystep=5):
 
 def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     '''
-    This method estimates the offset and the tilt angle of the rotation axis
+    This function estimates the offset and the tilt angle of the rotation axis
     respect to the detector using the projections at 0° and at 180°.
     The latter is flipped horizontally and is compared with the projection
     at 0°, computing a root mean square error for each x position at each
@@ -448,7 +448,7 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
 
 def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift,theta):
     '''
-    This method shows two figures that report the results of find_shift_and_tilt_angle function.
+    This function shows two figures that report the results of find_shift_and_tilt_angle function.
     In the first figure are shown the computed shift of the rotation axis from the polynomial fit
     and the subtraction between the projection at 0° and the horizontal flip of the projection
     at 180° (proj_0 - pro_180[:,::-1]) before the correction.
@@ -593,7 +593,7 @@ def question ():
 
 def correction_axis_rotation (img_stack,shift,theta,datapath):
     '''
-    This function perform the correction of all the images in the stack,
+    This function performs the correction of all the images in the stack,
     according to the shift and tilt angle of the axis of rotation
     with respect to the central vertical axis of the images.
     The method also open the file data.txt placed in the path expressed by 
@@ -631,7 +631,7 @@ def correction_axis_rotation (img_stack,shift,theta,datapath):
 
 def save_images (new_fname,img_stack,digits):
     '''
-    This method saves the stack of corrected images in the directory
+    This function saves the stack of corrected images in the directory
     and with the filename prefix expressed by new_fname.
 
     Parameters

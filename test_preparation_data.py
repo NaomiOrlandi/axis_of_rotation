@@ -114,23 +114,48 @@ def test_proj_0_180 (angle,array):
 #=============================================
 
 def test_reader_gray_image_wrong_filepath ():
+    '''
+    Test for the occurrence of ImportError when the input 
+    filepath to the function for reading .tiff images, 
+    preparation_data.reader_gray_images(), does not exist.
+    '''
     filepath = 'not\\existing\\path'
     with pytest.raises(ImportError) as e:
         preparation_data.reader_gray_images(filepath)
     assert str(e.value) == 'directory {0} does not exist'.format(filepath)
 
 def test_reader_gray_image_good_data ():
-    filepath = 'C:\\Users\\Naomi\\correctionCOR\\images\\Flat_Darth_Vader'
+    '''
+    Test for preparation_data.reader_gray_images() function, when the input
+    filepath contains one images.
+    It asserts that the list created has unit lenght
+    '''
+    filepath = 'testing_images\\tomography\\dark'
     im_list = preparation_data.reader_gray_images(filepath)
     assert len(im_list) == 1
 
 def test_create_array ():
+    '''
+    Test for the function preparation_data.create_array(), which creates 
+    3D array from a list of 2D arrays
+    (3D array from a list containing grey scaled images),considering
+    the lenght of a reference list of images.
+    The test asserts that the shape of the final array from a list 
+    with same lenght to the reference list is equal to the 
+    shape of the reference list transformed in 3D array
+    '''
     test_array = np.random.rand(3,2,2)
     test_ref_list = test_array.tolist()
     fin_array = preparation_data.create_array(test_ref_list,test_ref_list)
     assert fin_array.shape == test_array.shape
 
 def test_create_array_one_img ():
+    '''
+    Test for the preparation_data.create_array() function when the initial
+    list contains one element, while the reference list contains 3 elements.
+    The test asserts that the shape of the 3D array returned from the initial list
+    is equal to the shape of ref list transformed to a 3D array
+    '''
     test_array = np.random.rand(3,2,2)
     test_ref_list = test_array.tolist()
     test_list = np.random.rand(1,2,2).tolist()
@@ -138,6 +163,12 @@ def test_create_array_one_img ():
     assert fin_array.shape == test_array.shape
 
 def test_create_array_few_img ():
+    '''
+    Test for the preparation_data.create_array() function when the initial
+    list contains few element, more than one and less than
+    the ones contained in the reference list.
+    The test controll the raise of ValueError
+    '''
     test_array = np.random.rand(3,2,2)
     test_ref_list = test_array.tolist()
     test_list = np.random.rand(2,2,2).tolist()
@@ -146,6 +177,13 @@ def test_create_array_few_img ():
     assert str(e.value) == '{0} should contain or 1 image or an amount of images equal to the num of tomographic projections'.format(test_list)
 
 def test_create_array_wrong_list ():
+    '''
+    Test for preparation_data.create_array() function when the dimensions of 
+    the 2D arrays contained in the list to be transformed in 3D array
+    are different from the dimensions of the 2D arrays contained in the 
+    reference list.
+    It asserts the raise of ValueError with the correct message.
+    '''
     test_ref_list = np.random.rand(3,2,5).tolist()
     test_list = np.random.rand(3,4,2).tolist()
     ref_dim = np.array(test_ref_list[0]).shape
@@ -154,7 +192,14 @@ def test_create_array_wrong_list ():
         preparation_data.create_array(test_list,test_ref_list)
     assert str(e.value) == '{0} should contain images with the same dimensions of tomographic projections'.format(test_list)
 
-def test_projection_0_180_correct_values ():
+def test_projection_0_180_correct_angles ():
+    '''
+    Test for preparation_data.projection_0_180() function, that from a stack
+    of images (3D array) returns the tomogrphic image acquired at 0° (the first image)
+    and the one acquired at 180° (the image at the end or in the middle of the stack,
+    depending if the last angle of acquisition is 180° or 360°)
+    In this test the angles considered are 180 and 360.
+    '''
     array=np.random.rand(4,2,2)
     array_corr=np.where(np.isnan(array),0,array)
     arr_360_0,arr_360_180=preparation_data.projection_0_180(360,array_corr)
@@ -164,3 +209,19 @@ def test_projection_0_180_correct_values ():
     assert np.array_equiv(array_corr[0],arr_180_0)
     assert np.array_equiv(array_corr[3],arr_180_180)
 
+def test_projection_0_180_wrong_angle ():
+    '''
+    Test for preparation_data.projection_0_180() function, that from a stack
+    of images (3D array) returns the tomogrphic image acquired at 0° (the first image)
+    and the one acquired at 180° (the image at the end or in the middle of the stack,
+    depending if the last angle of acquisition is 180° or 360°)
+    In this test an angle different from 180 or 360 degrees is considered.
+    Hence the raise of ValueError with the corresponding message is asserted.
+    '''
+    array=np.random.rand(4,2,2)
+    array_corr=np.where(np.isnan(array),0,array)
+    angle = 200
+
+    with pytest.raises(ValueError) as err:
+        preparation_data.projection_0_180(angle,array_corr)
+    assert str(err.value) == 'the maximum angle for the tomography must be 180 or 360 degrees'
