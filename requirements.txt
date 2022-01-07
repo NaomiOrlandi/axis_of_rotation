@@ -2,6 +2,7 @@ neutompy
 os
 glob
 sys
+tkinter
 argparse
 configparser
 pytest
