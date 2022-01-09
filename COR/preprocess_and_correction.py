@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import neutompy as ntp
-import image_slicer
+import show_stack
 import numpy as np
 import os
 import cv2
@@ -295,7 +295,7 @@ def ROIs_for_correction(ref_proj,ystep=5):
     '''
     This function allows to select one or multiple ROIs in the projections
     that will be considered when searching for the axis of rotation
-    offset and tilt angle in other functions.
+    offset and tilt angle in the function find_shift_and_tilt_angle().
     The suggestion is to select the regions where the sample is visible
     and where there is as little noise as possible.
     The method returns a 1D array containing the values of y coordinate
@@ -339,7 +339,7 @@ def ROIs_for_correction(ref_proj,ystep=5):
 
 def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     '''
-    This function estimates the offset and the tilt angle of the rotation axis
+    This function estimates the offset and the tilt angle of the rotation axis with 
     respect to the detector using the projections at 0° and at 180°.
     The latter is flipped horizontally and is compared with the projection
     at 0°, computing a root mean square error for each x position at each
@@ -622,7 +622,7 @@ def correction_axis_rotation (img_stack,shift,theta,datapath):
     for s in tqdm(range(0, img_stack.shape[0]), unit=' images'):
         img_stack[s,:,:] = np.roll(ntp.rotate_sitk(img_stack[s,:,:], theta, interpolator=sitk.sitkLinear), shift, axis=1)
     
-    image_slicer.plot_tracker(img_stack)
+    show_stack.plot_tracker(img_stack)
     print('>Writing shift and theta values in data.txt file...')
     file_data = open(os.path.join(datapath,'data.txt'),'a')
     file_data.write('\nshift {0} \ntilt angle {1}'.format(shift,theta))

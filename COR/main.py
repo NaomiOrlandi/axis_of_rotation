@@ -2,7 +2,7 @@ import argparse
 import configparser
 import sys
 import preparation_data
-from image_slicer import plot_tracker
+from show_stack import plot_tracker
 import preprocess_and_correction
 
 
