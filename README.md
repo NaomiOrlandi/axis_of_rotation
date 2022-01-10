@@ -133,8 +133,55 @@ In both the files, property and unit tests are present. A folder called *testing
 
 For a more datailed description of the functions, see the [API reference]().
 
-### **Installation**
+## **Installation**
 To install the application, clone the repository [axis_of_rotation](https://github.com/NaomiOrlandi/axis_of_rotation), then use the package manager [pip](https://pip.pypa.io/en/stable/) to install it.
+
+```
+git clone https://github.com/NaomiOrlandi/axis_of_rotation
+cd axis_of_rotation
+conda install -c -r requirements_neutompy.txt
+pip install -r requirements_project.txt
+pip install COR
+```
+<span style="color:red">**Note:**</span>  
+Once neutompy library in installed, open the *preproc.py* file and add 'rotate_sitk' inside
+the list `__all__` , obtaining
+
+```python
+__all__ = [ 'draw_ROI',
+		    'normalize_proj',
+			'log_transform',
+			'find_COR',
+			'correction_COR',
+			'remove_outliers',
+			'remove_outliers_stack',
+			'remove_stripe',
+			'remove_stripe_stack',
+			'simple_BHC',
+			'zero_clipping_value',
+			'rotate_sitk'
+			 ]
+```
+## **Usage**
+
+When COR is installed, the user has to modify the *configuration.ini* file with the desired data, following the despriptions reported in the file.
+Then he/she can simply type on command line `COR <optional arguments>`.  
+In order to have a description of the optional arguments, type `COR -h` or `COR --help`
+### **Optional arguments**
+- `-roi` : it allows to perform the cropping of all the tomographic projection images, drawing a ROI on one of them;
+
+- `-norm` : images in the stack are normalized, considering flat and dark images. If the images were cropped, the result will be a stack of images with crop dimensions;
+
+- `outliers` : images are filtered from bright, dark or both outliers.
+
+Once preprocessing is performed, the position estimate of the sample axis of rotation (offset and tilt angle) is computed.
+Then the user, looking at the figures that represent the results, can decide whether to correct the images, to perform again the estimate or to exit and abort the script.
+
+ROI coordinates (if images are cropped) and rotation axis position will be saved in file *data.txt*, while the corrected images in a path specified in the [configuration file](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/configuration.ini).
+
+## **Example**
+...
+
 
 
 
