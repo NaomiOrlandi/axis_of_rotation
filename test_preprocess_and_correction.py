@@ -1,6 +1,6 @@
 import pytest
-import preprocess_and_correction
-import preparation_data
+import COR.preprocess_and_correction as preprocess_and_correction
+import COR.preparation_data as preparation_data
 import numpy as np
 from unittest import mock
 import cv2

@@ -1,5 +1,5 @@
 import pytest
-import preparation_data
+import COR.preparation_data as preparation_data
 import numpy as np
 import os
 from hypothesis import given
