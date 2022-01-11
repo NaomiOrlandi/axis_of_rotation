@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import neutompy as ntp
-import show_stack
+from COR import show_stack
 import numpy as np
 import os
 import cv2
