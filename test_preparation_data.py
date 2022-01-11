@@ -200,14 +200,14 @@ def test_projection_0_180_correct_angles ():
     depending if the last angle of acquisition is 180° or 360°)
     In this test the angles considered are 180 and 360.
     '''
-    array=np.random.rand(4,2,2)
+    array=np.random.rand(5,2,2)
     array_corr=np.where(np.isnan(array),0,array)
     arr_360_0,arr_360_180=preparation_data.projection_0_180(360,array_corr)
     arr_180_0,arr_180_180=preparation_data.projection_0_180(180,array_corr)
     assert np.array_equiv(array_corr[0],arr_360_0)
-    assert np.array_equiv(array_corr[1],arr_360_180)
+    assert np.array_equiv(array_corr[2],arr_360_180)
     assert np.array_equiv(array_corr[0],arr_180_0)
-    assert np.array_equiv(array_corr[3],arr_180_180)
+    assert np.array_equiv(array_corr[4],arr_180_180)
 
 def test_projection_0_180_wrong_angle ():
     '''
@@ -218,7 +218,7 @@ def test_projection_0_180_wrong_angle ():
     In this test an angle different from 180 or 360 degrees is considered.
     Hence the raise of ValueError with the corresponding message is asserted.
     '''
-    array=np.random.rand(4,2,2)
+    array=np.random.rand(5,2,2)
     array_corr=np.where(np.isnan(array),0,array)
     angle = 200
 
