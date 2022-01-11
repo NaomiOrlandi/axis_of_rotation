@@ -258,9 +258,9 @@ The passages will be the following:
    shift 24 
    tilt angle -2.0152243507642233
    ```
-   The point (0,0) is at the top left of the image.
+   Point (0,0) is at the top left of the image.
 
-   ## **Test routine**
+## **Test routine**
 
    Tests for file *prepatation_data.py* are in *test_preparation_data.py* and tests for *preprocess_and_correction.py* are in *test_preprocess_and_correction.py*.
    Invoke the pytest module to perform all the tests.
