@@ -166,8 +166,8 @@ __all__ = [ 'draw_ROI',
 ## **Usage**
 
 When COR is installed, the user has to modify the *configuration.ini* file with the desired data, following the despriptions reported in the file.
-Then he/she can simply type on command line `COR <optional arguments>`.  
-In order to have a description of the optional arguments, type `COR -h` or `COR --help`
+Then he/she can simply type on command line `python COR <optional arguments>`.  
+In order to have a description of the optional arguments, type `python COR -h` or `python COR --help`
 ### **Optional arguments**
 - `-roi` : it allows to perform the cropping of all the tomographic projection images, drawing a ROI on one of them;
 
@@ -180,7 +180,7 @@ Then the user, looking at the figures that represent the results, can decide whe
 
 ROI coordinates (if images are cropped) and rotation axis position will be saved in file *data.txt*, while the corrected images in a path specified in the [configuration file](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/configuration.ini).
 
-## **Examples**
+## **Example**
 The folder [example_dataset](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset) contains an example of data structure, usable with the application.   
 In [projections](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/projections) 180 x-ray tomoographic projection images of a wooden cube with two holes are stored. The last angle of acquisition is 360°.  
 In [flat](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/flat) and [dark](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/dark) are contained rispectively the flat and dark images of the same acquisition.
@@ -191,7 +191,7 @@ The user has to insert the correct filepaths for the initial images and the corr
 
 Once the configuration file is prepared, open the command line and type 
 
-`COR -roi -norm -outliers`
+`python COR -roi -norm -outliers`
 
 The passages will be the following:
 
@@ -249,9 +249,35 @@ The passages will be the following:
 
    The corrected stack of projection is shown and saved in the path specified in *configuration.ini*
 
-   The created file *data.txt*, whose location is written in the configuration file, contains the coordinates of the cropping ROI, the offset and the tilt angle of the sample rotation axis.
+   The created file *data.txt*, whose location is written in the configuration file, contains the coordinates of the cropping ROI, the offset and the tilt angle of the sample rotation axis:
+   ```txt
+   rowmin 23 
+   rowmax 959 
+   colmin 37 
+   colmax 1066
+   shift 24 
+   tilt angle -2.0152243507642233
+   ```
+   The point (0,0) is at the top left of the image.
 
+   ## **Test routine**
 
+   Tests for file *prepatation_data.py* are in *test_preparation_data.py* and tests for *preprocess_and_correction.py* are in *test_preprocess_and_correction.py*.
+   Invoke the pytest module to perform all the tests.
+
+   ```
+   pytest
+   ========================================== test session starts ===========================================
+   platform win32 -- Python 3.8.10, pytest-6.2.5, py-1.11.0, pluggy-1.0.0
+   rootdir: C:\Users\Naomi\correctionCOR
+   plugins: hypothesis-6.34.1
+   collected 30 items
+
+   test_preparation_data.py ...........                                                                [ 36%]
+   test_preprocess_and_correction.py ...................                                               [100%]
+
+   ===================================== 30 passed in 61.20s (0:01:01) ====================================== 
+```
 
 
 
