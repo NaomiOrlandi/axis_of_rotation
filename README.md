@@ -280,22 +280,7 @@ The passages will be the following:
    ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-### **References**
+## **References**
 <a id="1">[1]</a> Anders. P. Kaestner, *Methods to Combine Multiple Images to Improve Quality*, Materials Research Proceedings, Vol. 15, pp 193-197, 2020
 https://doi.org/10.21741/9781644900574-30
 
