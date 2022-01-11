@@ -150,18 +150,18 @@ the list `__all__` , obtaining
 
 ```python
 __all__ = [ 'draw_ROI',
-		    'normalize_proj',
-			'log_transform',
-			'find_COR',
-			'correction_COR',
-			'remove_outliers',
-			'remove_outliers_stack',
-			'remove_stripe',
-			'remove_stripe_stack',
-			'simple_BHC',
-			'zero_clipping_value',
-			'rotate_sitk'
-			 ]
+            'normalize_proj',
+            'log_transform',
+            'find_COR',
+            'correction_COR',
+            'remove_outliers',
+            'remove_outliers_stack',
+            'remove_stripe',
+            'remove_stripe_stack',
+            'simple_BHC',
+            'zero_clipping_value',
+            'rotate_sitk'
+           ]
 ```
 ## **Usage**
 
@@ -277,7 +277,7 @@ The passages will be the following:
    test_preprocess_and_correction.py ...................                                               [100%]
 
    ===================================== 30 passed in 61.20s (0:01:01) ====================================== 
-```
+   ```
 
 
 
