@@ -79,7 +79,7 @@ The user has also the possibility to perform preprocessing on the images (one or
 The projection images must be of .tiff format and the tomography has to be performed with a maximum angle of 180° or 360°.
 A flat and a dark image or stack of the same format are required.
 
-### **Structure**
+## **Structure**
 The program in structured as the following:
 
 1. a [configuration file](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/configuration.ini) in which the user has to specify the path of the folders containing the .tiff projection images, the flat image or images and the dark image or images in section **[directories]**.  
@@ -88,10 +88,11 @@ In section **[angle]** the user specifies the last acquisition angle.
 In **[outlier filter]**, if the user wants to perform an outliers filtering, the number of neighboorhood pixels has to be specified.  
 Finally in section **[final files]** are stored the desired path for a file *data.txt* in whixh will be written the offset and the tilt angle of the rotation axis and the coordinates of the region of interest (ROI) if cropping is performed, the path of the folder that will contain the corrected projection with the prefix of the name of the new files, and the number of digits of the numbering for the new files.
 
-2. a [file for the preparation of data](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/COR/preparation_data.py), where there are the following functions: 
-- <span style="color:green">reader_grey_images</span>, that reads grey scaled images contained in a specified filepath;
-- <span style="color:green">create_array</span>, that convert a list of images to a 3D array;
-- <span style="color:green">projection_0_180</span>, that select the projections at 0° and 180° from a stack of projections.
+2. a [file for the preparation of data](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/COR/preparation_data.py), where there are the following functions:  
+
+   - <span style="color:green">reader_grey_images</span>, that reads grey scaled images contained in a specified filepath;
+   - <span style="color:green">create_array</span>, that convert a list of images to a 3D array;
+   - <span style="color:green">projection_0_180</span>, that select the projections at 0° and 180° from a stack of projections.
 
 3. a [file for the preprocessing and the correction of the images](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/COR/preprocess_and_correction.py), where the functions for the correction of the images and for their eventual preprocessing are collected.
 
@@ -179,8 +180,79 @@ Then the user, looking at the figures that represent the results, can decide whe
 
 ROI coordinates (if images are cropped) and rotation axis position will be saved in file *data.txt*, while the corrected images in a path specified in the [configuration file](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/configuration.ini).
 
-## **Example**
-...
+## **Examples**
+The folder [example_dataset](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset) contains an example of data structure, usable with the application.   
+In [projections](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/projections) 180 x-ray tomoographic projection images of a wooden cube with two holes are stored. The last angle of acquisition is 360°.  
+In [flat](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/flat) and [dark](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/dark) are contained rispectively the flat and dark images of the same acquisition.
+
+The user has to insert the correct filepaths for the initial images and the corrected ones in the configuration file *configuration.ini*, the variable *angle* has to be 360 and *radius_neighborhood* can be any desired integer for the outliers filtering (in this example it is 5).
+
+### **Example with cropping, normalization and bright and dark outliers filtering**
+
+Once the configuration file is prepared, open the command line and type 
+
+`COR -roi -norm -outliers`
+
+The passages will be the following:
+
+1. All the grey scaled images are read and the stack of projections is visualized with the possibility to scroll through the images.
+
+   <img src="https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/documentation_images/visualization_proj.PNG" width="50%" height="50%">
+
+2. The first image of the stack is shown to allow the user to select manually the region of interest (ROI), that will be used for cropping all the stack projections.
+
+   <img src = "https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/documentation_images/select_ROI.PNG" width = "50%" height = "50%">
+
+3. The normalization is performed considering the projection images, the coordinates of the cropping ROI and dark and flat images.
+
+4. The user is asked to choose which kind of outliers to remove from the images. In this example the filtering is performed for dark and bright outliers:
+
+   ```
+   > Do you want to perform a filtering from bright outliers,dark outliers or both?     
+   [B] filter just bright outliers
+   [D] filter just dark outliers
+   [A] filter both bright and dark outliers
+   Type your answer and press [Enter] :a
+   ```
+5. ```
+   To compute the rotation axis position it is necessary to select one or multiple regions where the sample is present.
+   Hence you must draw the different regions vertically starting from top to bottom.
+   > Insert the number of regions to select:
+   ```
+   In this example 1 region is selected (where the sample is visible and without background above and below it, in order to avoid noise in the region):
+
+   <img src = "https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/documentation_images/ROI_for_corr.PNG" width = "50%" height = "50%">
+
+   After the computation of the position of the rotation axis of the sample, the command line will show the following:
+
+   ```
+   Rotation axis Found!
+   offset = 24.5    tilt angle = -2.0192550867664587 °
+   average of residuals  =  0.01322056
+   ```
+
+   And the following images are visualized:
+
+   ![before](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/documentation_images/before_corr.PNG "before")
+
+   ![after](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/documentation_images/after_corr.PNG "after")
+
+6. ```
+   > Rotation axis found. Do you want to correct all projections?
+   [Y] Yes, correct them.
+   [N] No, find it again.
+   [C] Cancel and abort the script.
+   Type your answer and press [Enter] :
+   ```
+
+   For the images correction, type `y` or `Y`.
+
+   The corrected stack of projection is shown and saved in the path specified in *configuration.ini*
+
+   The created file *data.txt*, whose location is written in the configuration file, contains the coordinates of the cropping ROI, the offset and the tilt angle of the sample rotation axis.
+
+
+
 
 
 
