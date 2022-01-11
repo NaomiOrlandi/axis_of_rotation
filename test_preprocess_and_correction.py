@@ -14,11 +14,11 @@ from hypothesis.extra.numpy import arrays
 #PROPERTY TESTING
 #==================================
 
-@given(im_stack=arrays(dtype=float,shape=(np.random.randint(1,10),10,10),elements=st.floats(min_value=0,allow_nan=False, allow_infinity=False),fill=st.nothing()),
-       rowmin=st.integers(0,9),
-       rowmax=st.integers(0,9),
-       colmin=st.integers(0,9),
-       colmax=st.integers(0,9))
+@given(im_stack=arrays(dtype=float,shape=(np.random.randint(1,10),4,4),elements=st.floats(min_value=0,allow_nan=False, allow_infinity=False),fill=st.nothing()),
+       rowmin=st.integers(0,3),
+       rowmax=st.integers(0,3),
+       colmin=st.integers(0,3),
+       colmax=st.integers(0,3))
 def test_cropping_same_lenght (im_stack,rowmin,rowmax,colmin,colmax):
     '''
     Test for the invariance of the number of images in
@@ -144,7 +144,7 @@ def test_norm_ROI (tomo_stack,flat_stack,dark_stack,rowmin,rowmax,colmin,colmax)
         assert str(e.value) == 'the stack of images (tomographic projections,flat images and dark images) must have the same dimensions'
 
 
-@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),10,10),elements=st.floats(0,255,allow_nan=False),fill=st.nothing()),
+@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),4,4),elements=st.floats(0,255,allow_nan=False),fill=st.nothing()),
        ans = st.characters(),
        neighboors = st.integers(1,10))
 def test_out_filter (tomo_stack,ans,neighboors):
@@ -339,10 +339,10 @@ def test_normalization_ROI_max_val():
     darkar=preparation_data.create_array(darklist,imlist)
     flatar=preparation_data.create_array(flatlist,imlist)
 
-    rowmin = np.random.randint(0,2080)
-    rowmax = np.random.randint(rowmin,2080)
-    colmin = np.random.randint(0,3096)
-    colmax = np.random.randint(colmin,3096)
+    rowmin = np.random.randint(0,999)
+    rowmax = np.random.randint(rowmin,999)
+    colmin = np.random.randint(0,1099)
+    colmax = np.random.randint(colmin,1099)
 
     im_norm = preprocess_and_correction.normalization_with_ROI(imar,darkar,flatar,rowmin,rowmax,colmin,colmax)
 
@@ -377,10 +377,10 @@ def test_normalization_ROI_same_dim ():
     darkar=preparation_data.create_array(darklist,imlist)
     flatar=preparation_data.create_array(flatlist,imlist)
 
-    rowmin = np.random.randint(0,2080)
-    rowmax = np.random.randint(rowmin,2080)
-    colmin = np.random.randint(0,3096)
-    colmax = np.random.randint(colmin,3096)
+    rowmin = np.random.randint(0,999)
+    rowmax = np.random.randint(rowmin,999)
+    colmin = np.random.randint(0,1099)
+    colmax = np.random.randint(colmin,1099)
 
     new_dim = (imar.shape[0],rowmax-rowmin,colmax-colmin)
 

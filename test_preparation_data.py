@@ -102,7 +102,7 @@ def test_proj_0_180 (angle,array):
     else:
         with pytest.raises(ValueError) as e:
             preparation_data.projection_0_180(angle,array)
-        assert str(e.value) == 'the maximum angle for the tomography should be or 180 or 360 degrees'
+        assert str(e.value) == 'the maximum angle for the tomography must be 180 or 360 degrees'
 
     
 
