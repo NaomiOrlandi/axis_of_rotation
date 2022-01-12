@@ -1,6 +1,8 @@
+import sys
+sys.path.insert(0,".\\COR")
 import pytest
-import COR.preprocess_and_correction as preprocess_and_correction
-import COR.preparation_data as preparation_data
+from COR import preparation_data
+from COR import preprocess_and_correction
 import numpy as np
 from unittest import mock
 import cv2

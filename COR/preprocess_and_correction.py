@@ -1,7 +1,5 @@
 import matplotlib.pyplot as plt
 import neutompy as ntp
-import sys
-sys.path.insert(0,"\\COR")
 import show_stack
 import numpy as np
 import os
