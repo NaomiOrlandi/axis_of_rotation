@@ -281,12 +281,12 @@ def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0):
      \n[A] filter both bright and dark outliers\
      \nType your answer and press [Enter] :')
     if ans == 'B' or ans == 'b':
-        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=axis,k=k,outliers='bright')
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,threshold=0.02,axis=axis,k=k,outliers='bright')
     elif ans == 'D' or ans == 'd':
-        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=axis,k=k,outliers='dark')
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,threshold=0.02,axis=axis,k=k,outliers='dark')
     elif ans == 'A' or ans == 'a':
-        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=axis,k=k,outliers='bright')
-        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,'local',axis=axis,k=k,outliers='dark')
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,threshold=0.02,axis=axis,k=k,outliers='bright')
+        img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,threshold=0.02,axis=axis,k=k,outliers='dark')
     else:
         raise IOError('Input not valid.')
     
