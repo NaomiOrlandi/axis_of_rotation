@@ -1,6 +1,7 @@
 import argparse
 import configparser
 import sys
+import os
 import preparation_data
 from show_stack import plot_tracker
 import preprocess_and_correction
@@ -101,7 +102,11 @@ def main ():
                 condition = True
             elif(ans=='C' or ans=='c'):
                 print('> Script aborted.')
-                sys.exit()
+                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                    os.remove(os.path.join(datapath,"data.txt"))
+                    sys.exit()
+                else:
+                    sys.exit()
             else:
                 print('Input not valid.')
 
@@ -141,7 +146,11 @@ def main ():
                 condition = True
             elif(ans=='C' or ans=='c'):
                 print('> Script aborted.')
-                sys.exit()
+                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                    os.remove(os.path.join(datapath,"data.txt"))
+                    sys.exit()
+                else:
+                    sys.exit()
             else:
                 print('Input not valid.')
         
@@ -182,7 +191,11 @@ def main ():
                 condition = True
             elif(ans=='C' or ans=='c'):
                 print('> Script aborted.')
-                sys.exit()
+                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                    os.remove(os.path.join(datapath,"data.txt"))
+                    sys.exit()
+                else:
+                    sys.exit()
             else:
                 print('Input not valid.')
         
@@ -221,7 +234,11 @@ def main ():
                 condition = True
             elif(ans=='C' or ans=='c'):
                 print('> Script aborted.')
-                sys.exit()
+                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                    os.remove(os.path.join(datapath,"data.txt"))
+                    sys.exit()
+                else:
+                    sys.exit()
             else:
                 print('Input not valid.')
 
@@ -260,7 +277,11 @@ def main ():
                 condition = True
             elif(ans=='C' or ans=='c'):
                 print('> Script aborted.')
-                sys.exit()
+                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                    os.remove(os.path.join(datapath,"data.txt"))
+                    sys.exit()
+                else:
+                    sys.exit()
             else:
                 print('Input not valid.')
         
@@ -297,7 +318,11 @@ def main ():
                 condition = True
             elif(ans=='C' or ans=='c'):
                 print('> Script aborted.')
-                sys.exit()
+                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                    os.remove(os.path.join(datapath,"data.txt"))
+                    sys.exit()
+                else:
+                    sys.exit()
             else:
                 print('Input not valid.')
         
@@ -335,7 +360,11 @@ def main ():
                 condition = True
             elif(ans=='C' or ans=='c'):
                 print('> Script aborted.')
-                sys.exit()
+                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                    os.remove(os.path.join(datapath,"data.txt"))
+                    sys.exit()
+                else:
+                    sys.exit()
             else:
                 print('Input not valid.')
         
@@ -368,7 +397,11 @@ def main ():
                 condition = True
             elif(ans=='C' or ans=='c'):
                 print('> Script aborted.')
-                sys.exit()
+                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                    os.remove(os.path.join(datapath,"data.txt"))
+                    sys.exit()
+                else:
+                    sys.exit()
             else:
                 print('Input not valid.')
         
