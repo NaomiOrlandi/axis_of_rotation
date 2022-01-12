@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import neutompy as ntp
-from COR import show_stack
+import sys
+sys.path.insert(0,"\\COR")
+import show_stack
 import numpy as np
 import os
 import cv2
@@ -192,6 +194,8 @@ def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin
         ROI_coor = (rowmin,rowmax,colmin,colmax) #create a tuple for the coordinates of the ROI
         if rowmin <= rowmax and colmin <= colmax:
             img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_coor=ROI_coor,crop_draw=False)
+            img_stack_norm = np.nan_to_num(img_stack_norm,copy = False,nan=0)
+            img_stack_norm = np.where(img_stack_norm<0,0,img_stack_norm)
             return img_stack_norm
         else:
             raise ValueError ('rowmin and colmin must be less than rowmax and colmax rispectively')
