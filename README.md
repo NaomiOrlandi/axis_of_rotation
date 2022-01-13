@@ -134,7 +134,7 @@ Finally in section **[final files]** are stored the desired path for a file *dat
 7. two testing files, one for the [part of preparation of data](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/test_preparation_data.py) and one for the [part of preprocessing and the correction of images](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/test_preprocess_and_correction.py).
 In both the files, property and unit tests are present. A folder called *testing_images* contains the image files used to perfom some tests.
 
-For a more datailed description of the functions, see the [API reference]().
+For a more datailed description of the functions, see the [documentation for functions](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/documentation_functions).
 
 ## **Installation**
 To install the application, clone the repository [axis_of_rotation](https://github.com/NaomiOrlandi/axis_of_rotation), then use the package manager [pip](https://pip.pypa.io/en/stable/) to install it.
