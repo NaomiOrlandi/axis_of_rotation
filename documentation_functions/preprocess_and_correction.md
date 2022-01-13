@@ -92,7 +92,6 @@ if **rowmin**>**rowmax** or **colmin**>**colmax**.
 This function computes the normalization of all the the images (tomographic projections) of a stack, using a stack of dark images and one of flat images.
 It will consider a ROI of all the images, whose coordinates are taken as parameters,
 and returns the new stack or normalized images. The fuction used is the [neutompy.normalize_proj](https://neutompy-toolbox.readthedocs.io/en/latest/neutompy.preproc.preproc.html#normalize_proj), where the dose ROI is not considered,but the normalization is performed only on a region of interest (crop ROI) of all projections.
-The coordinates of the ROI are an input of the function.
 
 **Parameters:**  
 - **img_stack : ndarray**  
@@ -124,7 +123,7 @@ The maximum column coordinate of the ROI.
 - **ValueError**  
 if **rowmin**>**rowmax** or **colmin**>**colmax**.
 
-## `normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)`
+## `normalization_no_ROI (img_stack,dark_stack,flat_stack)`
 
 This function computes the normalization of all the the images (tomographic projections) of a stack, using a stack of dark images and one of flat images. It returns the new stack or normalized images. The fuction used is the [neutompy.normalize_proj](https://neutompy-toolbox.readthedocs.io/en/latest/neutompy.preproc.preproc.html#normalize_proj), where the dose ROI and the crop ROI are not considered.
 
@@ -289,7 +288,7 @@ the tilt angle of the rotation axis with respect to the central vertical axis of
 - **datapath : str**  
 string representing the directory path where *data.txt* is placed.
 
-**Retruns:**  
+**Returns:**  
 - **img_stack : ndarray**  
 3D array containing the corrected tomographic images.
 

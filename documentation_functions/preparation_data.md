@@ -16,7 +16,8 @@ list of 2D arrays representing the read images.
 
 **Raises:**
 - **ImportError**  
-when the directory does not contain any .tiff file.
+when the directory does not contain any .tiff file.  
+
 - **ImportError**  
 when the directory does not exist.
 
@@ -38,6 +39,7 @@ list of 2D array taken as reference.
 **Raises:**
 - **ValueError**  
 when **img_list** contains a num of elements different from 1 or the num of elements of **img_list_tomo**.
+
 - **ValueError**  
 when the dimensions of the 2D arrays of **img_list** are different from the ones of the 2D arrays of **img_list_tomo**.
 
