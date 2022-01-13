@@ -35,6 +35,7 @@ Some of the improvment of of the images are cropping, normalization and the outl
    It is a process that changes the range of pixel intensity values. Also called contrast stretching, it enhances the contrast of the image.
    Each normalized px intensity is calculated with the following formula,  
 
+   ![I](https://latex.codecogs.com/svg.image?%5CLARGE%20I_%7Bnew%7D%20=%20%5CLARGE%20%5Cfrac%7BI%20-%20I_%7Bmin%7D%7D%7BI_%7Bmax%7D%20-%20I%7Bmin%7D%7D)
    $\LARGE I_{new} = \LARGE \frac{I - I_{min}}{I_{max} - I{min}}$  
 
    where $I_{new}$ is the new px intensity, $I$ is the old px intensity, $I_{min}$ is the px intensity of the dark image and $I_{max}$ is the px intensity of the flat image acquired with light on and without the sample.
