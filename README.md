@@ -141,8 +141,8 @@ To install the application, clone the repository [axis_of_rotation](https://gith
 ```
 git clone https://github.com/NaomiOrlandi/axis_of_rotation
 cd axis_of_rotation
-conda install -c -r requirements_neutompy.txt
-pip install -r requirements_project.txt
+conda env create -f environment.yml
+conda activate axrot
 pip install COR
 ```
 
