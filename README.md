@@ -35,19 +35,20 @@ Some of the improvment of of the images are cropping, normalization and the outl
    It is a process that changes the range of pixel intensity values. Also called contrast stretching, it enhances the contrast of the image.
    Each normalized px intensity is calculated with the following formula,  
 
-   ![I](https://latex.codecogs.com/svg.image?%5CLARGE%20I_%7Bnew%7D%20=%20%5CLARGE%20%5Cfrac%7BI%20-%20I_%7Bmin%7D%7D%7BI_%7Bmax%7D%20-%20I%7Bmin%7D%7D)
-   $\LARGE I_{new} = \LARGE \frac{I - I_{min}}{I_{max} - I{min}}$  
+   ![I](https://latex.codecogs.com/svg.image?I_%7Bnew%7D%20=%20%5Cfrac%7BI%20-%20I_%7Bmin%7D%7D%7BI_%7Bmax%7D%20-%20I_%7Bmin%7D%7D)
 
-   where $I_{new}$ is the new px intensity, $I$ is the old px intensity, $I_{min}$ is the px intensity of the dark image and $I_{max}$ is the px intensity of the flat image acquired with light on and without the sample.
+   where *I<sub>new</sub>* is the new px intensity, *I* is the old px intensity, *I<sub>min</sub>* is the px intensity of the dark image and *I<sub>max</sub>* is the px intensity of the flat image acquired with light on and without the sample.
 
 - **Outliers filtering.**  
    It is a nonlinear process that reduces random or salt-and-pepper noise and preserves edges in an image. It's useful for correcting, e.g., hot pixels or dead pixels of a CCD image.  
    A promising method is to perform the weighted combination of images. It better improves the SNR of images and reduces the number of outliers with respect to simply compute the average or the median of images[[1]](#1).  
 
-   $ f_{corrected}(x,y) = \sum_{i=1}^{N}{w_i(x,y) \cdot f_i(x,y)} $  
+   ![fcorr](https://latex.codecogs.com/svg.image?f_%7Bcorrected%7D(x,y)%20=%20%5Csum_%7Bi=1%7D%5E%7BN%7D%7Bw_i(x,y)%20%5Ccdot%20f_i(x,y)%7D)
 
-   where $ f_{corrected}(x,y)$ is the corrected image, $f_i(x,y)$ is one of the images that will be combined, $w_i(x,y)$ is the corresponding weight.
-   The latter is computed using a threshold function based on the local standard deviation of the original image.
+   where *f<sub>corrected</sub>(x,y)* is the corrected image, *f<sub>i</sub>(x,y)* is one of the images that will be combined, *w<sub>i</sub>(x,y)* is the corresponding weight.  
+   One possibility is to use the original image and its median as combining images and to set *w<sub>i</sub>(x,y)* as 1 or 0 if the original px value differs from the median by a certain threshold. Hence:
+
+   ![fcorr1](https://latex.codecogs.com/svg.image?f_%7Bcorrected%7D(x,y)%20=%20w(x,y)%5Ccdot%20f_%7Boriginal%7D(x,y)%20&plus;%20(1-w(x,y))%5Ccdot%20f_%7Bmedian%7D(x,y))
 
 
 #### **Determining rotation axis position**
@@ -61,9 +62,9 @@ The current main methods of determining the centre of rotation (*COR*) are cente
 
 Assuming to use the second technique and that the two opposite projections are the one acquired at 0° and the one acquired at 180°, then the *COR* is estimated with the following formula[[3]]:
 
-$ COR = min_x \sum_{i=1}^N(p_0(x+i)-p_{\pi}(N-i))^2 $
+![COR](https://latex.codecogs.com/svg.image?COR%20=%20min_x%20%5Csum_%7Bi=1%7D%5EN(p_0(x&plus;i)-p_%7B180%7D(N-i))%5E2)
 
-where $COR$ is the centre of rotation, $p_0$ represents the projection image at 0°, $p_{\pi}$ stands for the projection at 180° and $x$ is the horizontal px position inthe image.
+where $COR$ is the centre of rotation, *p<sub>0</sub>* represents the projection image at 0°, *p<sub>180</sub>* stands for the projection at 180° and *x* is the horizontal px position in the image.
 The calculation is repeated for all the vertical positions.
 Once all the horizontal shift are calculated, a polynomial fit is performed between them and the vertical coordinates, in order to estimate the tilted angle and the offset of the sample axis of rotation with respect to the central vertical axis of the images, i.e., determine the position of the *COR* precisely.
 
@@ -109,7 +110,7 @@ Finally in section **[final files]** are stored the desired path for a file *dat
    - <span style="color:green">normalization_no_ROI</span>, that normalize all the images in the stack considering flat and dark images;
 
    **Outliers filter**
-   - <span style="color:green">outliers_filter</span>, which removes bright or dark or both outliers from a stack of images, through the method described in [Preprocessing](#Preprocessing);  
+   - <span style="color:green">outliers_filter</span>, which removes bright or dark or both outliers from a stack of images, through the method described in [Preprocessing](#Preprocessing). The threshold is global and is set to 0.02;  
 
    For the images correction:
 
