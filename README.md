@@ -184,7 +184,7 @@ ROI coordinates (if images are cropped) and rotation axis position will be saved
 
 ## **Example**
 The folder [example_dataset](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset) contains an example of data structure, usable with the application.   
-In [projections](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/projections) 180 x-ray tomoographic projection images of a wooden cube with two holes are stored. The last angle of acquisition is 360°.  
+In [projections](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/projections) 181 x-ray tomoographic projection images of a wooden cube with two holes are stored. The last angle of acquisition is 360°. The tilt angle of the sample rotation axis is known and it is 2°. 
 In [flat](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/flat) and [dark](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/dark) are contained rispectively the flat and dark images of the same acquisition.
 
 The user has to insert the correct filepaths for the initial images and the corrected ones in the configuration file *configuration.ini*, the variable *angle* has to be 360 and *radius_neighborhood* can be any desired integer for the outliers filtering (in this example it is 5).
@@ -253,12 +253,12 @@ The passages will be the following:
 
    The created file *data.txt*, whose location is written in the configuration file, contains the coordinates of the cropping ROI, the offset and the tilt angle of the sample rotation axis:
    ```txt
-   rowmin 23 
-   rowmax 959 
-   colmin 37 
-   colmax 1066
-   shift 24 
-   tilt angle -2.0152243507642233
+   rowmin 28 
+   rowmax 958 
+   colmin 55 
+   colmax 1072
+   shift 36 
+   tilt angle -2.0187374650361463
    ```
    Point (0,0) is at the top left of the image.
 
