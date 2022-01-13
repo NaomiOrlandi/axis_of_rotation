@@ -1,0 +1,30 @@
+name : axrot
+channels : 
+- conda-forge
+- simpleITK
+- astra-toolbox
+dependencies :
+- python=3.8.10
+- simpleITK::simpleITK=2.1.1
+- astratoolbox::astra-toolbox=2.0.0
+- ipython=7.30.1
+- numpy=1.21.2
+- numexpr=2.8.1
+- matplotlib=3.5.1
+- astropy=5.0
+- tiffile=2021.11.2
+- opencv=4.0.1
+- scikit-image=0.15.0
+- read-roi=1.6.0
+- mkl_fft=1.3.1
+- scipy=1.7.3
+- six=1.16.0
+- tqdm=4.62.3
+- pywavelets=1.2.0
+- pip:
+  - neutompy=1.0.10
+  - argparse
+  - configparser
+  - tkinter
+  - pytest=6.2.5
+  - hypothesis=6.34.1
