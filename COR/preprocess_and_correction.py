@@ -7,6 +7,7 @@ import cv2
 from matplotlib.offsetbox import AnchoredText
 import SimpleITK as sitk
 from tqdm import tqdm
+from neutompy.preproc.preproc import rotate_sitk as rotate_sitk
 
 
 
@@ -534,8 +535,8 @@ def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift
 
     plt.legend()
 
-    p0_r = np.roll(ntp.rotate_sitk(proj_0, theta, interpolator=sitk.sitkLinear),    middle_shift , axis=1) 
-    p90_r = np.roll(ntp.rotate_sitk(proj_180, theta, interpolator=sitk.sitkLinear),  middle_shift, axis=1)
+    p0_r = np.roll(rotate_sitk(proj_0, theta, interpolator=sitk.sitkLinear),    middle_shift , axis=1) 
+    p90_r = np.roll(rotate_sitk(proj_180, theta, interpolator=sitk.sitkLinear),  middle_shift, axis=1)
 
 
 	# FIGURE with difference image and histogram
@@ -624,7 +625,7 @@ def correction_axis_rotation (img_stack,shift,theta,datapath):
     
     print('> Correcting rotation axis misalignment...')
     for s in tqdm(range(0, img_stack.shape[0]), unit=' images'):
-        img_stack[s,:,:] = np.roll(ntp.rotate_sitk(img_stack[s,:,:], theta, interpolator=sitk.sitkLinear), shift, axis=1)
+        img_stack[s,:,:] = np.roll(rotate_sitk(img_stack[s,:,:], theta, interpolator=sitk.sitkLinear), shift, axis=1)
     
     show_stack.plot_tracker(img_stack)
     print('>Writing shift and theta values in data.txt file...')
