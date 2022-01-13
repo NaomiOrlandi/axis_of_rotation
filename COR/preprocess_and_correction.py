@@ -154,11 +154,14 @@ def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin
     The fuction used is the neutompy.normalize_proj(proj, dark, flat,  proj_180=None, out=None,
     dose_file='', dose_coor=(), dose_draw=False,crop_file='', crop_coor=ROI_coor, crop_draw=False,
     scattering_bias=0.0, minus_log_lowest_val=None,min_denom=1.0e-6,  min_ratio=1e-6, max_ratio=10.0,
-    mode='mean', log=False,  sino_order=False, show_opt='mean'),
+    mode='mean', log=False,  sino_order=False, show_opt='mean')[1],
     where the dose ROI is not considered,but the normalization
     is performed only on a region of interest (crop ROI) of all projections.
-    The coordinates of the ROI are an input of the method.
-
+    The coordinates of the ROI are an input of the function.
+    
+    References:
+    [1] https://neutompy-toolbox.readthedocs.io/en/latest/neutompy.preproc.preproc.html#normalize_proj
+    
     Parameters
     ----------
     img_stack : ndarray
@@ -244,8 +247,7 @@ def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0):
     The function used is neutompy.remove_outliers_stack() and it replaces a pixel
     by the median of the pixels in the 2d neighborhood
     if it deviates from the median by more than a certain value (k*threshold).
-    The threshold used is 'local', hence the local standard deviation map is taken
-    into account.
+    Threshold is set to 0.02, while k is an optional parameter.
     The user will be asked to choose the type of outliers to remove before the
     filtering.
 
@@ -353,7 +355,7 @@ def find_shift_and_tilt_angle(y_of_ROIs,proj_0,proj_180):
     References:
     [1] M. Yang, H. Gao, X. Li, F. Meng, D. Wei, "A new method todetermine the center
         of rotation shift in 2DCT scanning systemusing image cross correlation",
-        NDT&E International 46 (2012) 48-54
+        NDT&E International, vol. 46 (2012), pp. 48-54
     [2] Anders P. Kaestner, "MuhRec—A new tomography reconstructor",
         Nuclear Instruments and Methods in Physics Research A 651 (2011) 156-160,
         section 2.2

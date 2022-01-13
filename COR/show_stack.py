@@ -35,7 +35,7 @@ class IndexTracker:
 
 def plot_tracker (img_array):
     '''
-    This method shows a stack of images with the possibility to 
+    This function shows a stack of images with the possibility to 
     scroll through the images pressing the right or left arrow key on the keyboard
     
     Parameters

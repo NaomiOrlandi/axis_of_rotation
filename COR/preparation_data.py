@@ -23,7 +23,7 @@ def reader_gray_images (filepath):
     Raises
     ------
     ImportError
-        when the directory does not contain and .tiff file
+        when the directory does not contain any .tiff file
     ImportError
         when the directory does not exist
     '''
@@ -52,7 +52,7 @@ def create_array (img_list,img_list_tomo):
     another list taken as a reference.
     In the first case a 3D array is created using the same image repeated
     untill reaching the required dimension.
-    In the second case simply the list is converted into a 3D array.
+    In the second case the list is simply converted into a 3D array.
     
     Parameters
     ----------
