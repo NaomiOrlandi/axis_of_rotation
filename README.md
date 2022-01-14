@@ -136,7 +136,7 @@ In both the files, property and unit tests are present. A folder called *testing
 For a more detailed description of the functions, see the [documentation for functions](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/documentation_functions).
 
 ## **Installation**
-To install the application, clone the repository [axis_of_rotation](https://github.com/NaomiOrlandi/axis_of_rotation), then use the package manager [pip](https://pip.pypa.io/en/stable/) to install it.
+Clone the repository [axis_of_rotation](https://github.com/NaomiOrlandi/axis_of_rotation), then create a conda environment with the dependencies expressed in *environment.yml*, activate it and use the package manager [pip](https://pip.pypa.io/en/stable/) to install the application.
 
 ```
 git clone https://github.com/NaomiOrlandi/axis_of_rotation
