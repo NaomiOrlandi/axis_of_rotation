@@ -156,7 +156,7 @@ In order to have a description of the optional arguments, type `python COR -h` o
 
 - `-norm` : images in the stack are normalized, considering flat and dark images. If the images were cropped, the result will be a stack of images with crop dimensions;
 
-- `outliers` : images are filtered from bright, dark or both outliers.
+- `-outliers` : images are filtered from bright, dark or both outliers.
 
 Once preprocessing is performed, the position estimate of the sample axis of rotation (offset and tilt angle) is computed.
 Then the user, looking at the figures that represent the results, can decide whether to correct the images, to perform again the estimate or to exit and abort the script.
