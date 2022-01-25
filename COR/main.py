@@ -40,8 +40,10 @@ def main ():
 
     config = configparser.ConfigParser()
 
-    
-    config.read(str(args.config_file))
+    if os.path.isfile(args.config_file):
+        config.read(str(args.config_file))
+    else:
+        raise OSError ('file {0} does not exist'.format(args.config_file))
 
 
     filepath = config.get('directories','dirpath_tomo')         #path to the tomographic projections
