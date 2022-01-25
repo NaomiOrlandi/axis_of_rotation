@@ -22,9 +22,9 @@ def reader_gray_images (filepath):
     
     Raises
     ------
-    ImportError
+    OSError
         when the directory does not contain any .tiff file
-    ImportError
+    OSError
         when the directory does not exist
     '''
     image_list = []
@@ -35,12 +35,12 @@ def reader_gray_images (filepath):
             im=cv2.imread(filename,cv2.IMREAD_GRAYSCALE) #0 stands for the gray_image reading (default is RGB reading)
             image_list.append(im)
         if len(image_list)==0:
-            raise ImportError('directory {0} does not contain any .tiff file'.format(filepath))
+            raise OSError('directory {0} does not contain any .tiff file'.format(filepath))
         else:
             return image_list
         
     else:
-        raise ImportError('directory {0} does not exist'.format(filepath))
+        raise OSError('directory {0} does not exist'.format(filepath))
     
 
 #image list is transformed in a 3D array
