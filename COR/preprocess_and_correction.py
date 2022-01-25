@@ -275,7 +275,7 @@ def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0):
 
     Raises
     ------
-    IOError
+    OSError
         if the user input is different from 'b','B','d','D','a' or 'A'
     '''
     ans = input('> Do you want to perform a filtering from bright outliers,dark outliers or both?\
@@ -291,7 +291,7 @@ def outliers_filter (img_stack, radius_2D_neighborhood, axis=0, k=1.0):
         img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,threshold=0.02,axis=axis,k=k,outliers='bright')
         img_stack_filtered = ntp.remove_outliers_stack(img_stack,radius_2D_neighborhood,threshold=0.02,axis=axis,k=k,outliers='dark')
     else:
-        raise IOError('Input not valid.')
+        raise OSError('Input not valid.')
     
     return img_stack_filtered
     
