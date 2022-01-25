@@ -10,6 +10,11 @@ import preprocess_and_correction
 def parse_args ():
     description = 'Correction of rotation axis for tomographic projections'
     parser = argparse.ArgumentParser(description=description)
+
+    #positional argument
+    parser.add_argument('config_file', help='path of the configuration file')
+
+    #optional arguments
     parser.add_argument('-roi',
                          dest='roi',
                          action= 'store_true',
@@ -31,8 +36,12 @@ def parse_args ():
 
 def main ():
 
+    args = parse_args()
+
     config = configparser.ConfigParser()
-    config.read('configuration.ini')
+
+    
+    config.read(str(args.config_file))
 
 
     filepath = config.get('directories','dirpath_tomo')         #path to the tomographic projections
@@ -62,7 +71,7 @@ def main ():
     #projection at 0° and at 180°
     tomo_0,tomo_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
 
-    args = parse_args()
+    
 
     print('> Reading the images...')
     #show all the images in the stack scrolling through them with arrow keys
