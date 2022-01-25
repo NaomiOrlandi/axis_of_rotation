@@ -105,9 +105,8 @@ def save_ROI (rowmin,rowmax,colmin,colmax,datapath):
     datapath : str
         string representing the directory path where to create data.txt 
     '''
-    file_data = open(os.path.join(datapath,'data.txt'),'a')
-    file_data.write('rowmin {0} \nrowmax {1} \ncolmin {2} \ncolmax {3}'.format(rowmin,rowmax,colmin,colmax))
-    file_data.close()
+    with open(os.path.join(datapath,'data.txt'),'a') as file:
+        file.write('rowmin {0} \nrowmax {1} \ncolmin {2} \ncolmax {3}'.format(rowmin,rowmax,colmin,colmax))
 
 
 def cropping (img_stack,rowmin,rowmax,colmin,colmax):
@@ -629,9 +628,10 @@ def correction_axis_rotation (img_stack,shift,theta,datapath):
     
     show_stack.plot_tracker(img_stack)
     print('>Writing shift and theta values in data.txt file...')
-    file_data = open(os.path.join(datapath,'data.txt'),'a')
-    file_data.write('\nshift {0} \ntilt angle {1}'.format(shift,theta))
-    file_data.close()
+
+    with open(os.path.join(datapath,'data.txt'),'a') as file:
+        file.write('\nshift {0} \ntilt angle {1}'.format(shift,theta))
+        
     return img_stack
 
 def save_images (new_fname,img_stack,digits):
