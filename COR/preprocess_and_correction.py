@@ -145,65 +145,8 @@ def cropping (img_stack,rowmin,rowmax,colmin,colmax):
     else:
         raise ValueError ('rowmin and colmin must be less than rowmax and colmax rispectively')
 
-def normalization_with_ROI (img_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax):
-    '''
-    This function computes the normalization of all the the images (tomographic projections)
-    of a stack, using a stack of dark images and one of flat images.
-    It will consider a ROI of all the images, whose coordinates are taken as parameters,
-    and returns the new stack or normalized images.
-    The fuction used is the neutompy.normalize_proj(proj, dark, flat,  proj_180=None, out=None,
-    dose_file='', dose_coor=(), dose_draw=False,crop_file='', crop_coor=ROI_coor, crop_draw=False,
-    scattering_bias=0.0, minus_log_lowest_val=None,min_denom=1.0e-6,  min_ratio=1e-6, max_ratio=10.0,
-    mode='mean', log=False,  sino_order=False, show_opt='mean')[1],
-    where the dose ROI is not considered,but the normalization
-    is performed only on a region of interest (crop ROI) of all projections.
-    The coordinates of the ROI are an input of the function.
-    
-    References:
-    [1] https://neutompy-toolbox.readthedocs.io/en/latest/neutompy.preproc.preproc.html#normalize_proj
-    
-    Parameters
-    ----------
-    img_stack : ndarray
-        3D array containing the projection images
-    dark_stack : ndarray
-        3D array containing the dark images
-    flat_stack : ndarray
-        3D array containing the flat images
-    rowmin : int
-        The minimum row coordinate of the ROI
-    rowmax : int
-        The maximum row coordinate of the ROI
-    colmin : int
-        The minimum column coordinate of the ROI
-    colmax : int
-        The maximum column coordinate of the ROI
-    
-    Returns
-    -------
-    img_stack_norm : ndarray
-        3D array containing the normalized images, each with the ROI dimensions
-    
-    Raises
-    ------
-    ValueError
-        if rowmin>rowmax or colmin>colmax
-    ValueError
-        if img_stack, dark_stack and flat_stack have different dimensions
-    '''
-    if img_stack.shape == dark_stack.shape and img_stack.shape == flat_stack.shape:
-        ROI_coor = (rowmin,rowmax,colmin,colmax) #create a tuple for the coordinates of the ROI
-        if rowmin <= rowmax and colmin <= colmax:
-            img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_coor=ROI_coor,crop_draw=False)
-            img_stack_norm = np.nan_to_num(img_stack_norm,copy = False,nan=0)
-            img_stack_norm = np.where(img_stack_norm<0,0,img_stack_norm)
-            return img_stack_norm
-        else:
-            raise ValueError ('rowmin and colmin must be less than rowmax and colmax rispectively')
-    else:
-        raise ValueError('the stack of images (tomographic projections,flat images and dark images) must have the same dimensions')
 
-def normalization_no_ROI (img_stack,dark_stack,flat_stack):
+def normalization (img_stack,dark_stack,flat_stack):
     '''
     This function computes the normalization of all the the images (tomographic projections)
     of a stack, using a stack of dark images and one of flat images.

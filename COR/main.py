@@ -95,7 +95,7 @@ def main ():
             dark_stack_crop = preprocess_and_correction.cropping(dark_stack,rowmin,rowmax,colmin,colmax)
             print('> Flat images:')
             flat_stack_crop = preprocess_and_correction.cropping(flat_stack,rowmin,rowmax,colmin,colmax)
-            tomo_stack_preproc = preprocess_and_correction.normalization_no_ROI(tomo_stack_preproc, dark_stack_crop, flat_stack_crop)
+            tomo_stack_preproc = preprocess_and_correction.normalization(tomo_stack_preproc, dark_stack_crop, flat_stack_crop)
             
             if args.out:
                 tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack_preproc,radius_neighborhood)
@@ -107,7 +107,7 @@ def main ():
     #no cropping
     #normalization
     elif args.norm:
-        tomo_stack_preproc = preprocess_and_correction.normalization_no_ROI(tomo_stack, dark_stack, flat_stack)
+        tomo_stack_preproc = preprocess_and_correction.normalization(tomo_stack, dark_stack, flat_stack)
         
         #normalization and outlierss filter
         if args.out:
