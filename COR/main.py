@@ -56,7 +56,9 @@ def main ():
                                                                 #(ex. digit=4 -> filename_0000.tiff,filename_0001.tiff,...)
 
     last_angle = config.getint('angle','angle')                 #last angle of tomographic acquisition
-    radius_neighborhood = config.getint('outlier filter','radius_neighborhood') #neighborhood radius for outlier filtering
+    
+    if args.out:                                                #read neighborhood radius only if outlier filter is required
+        radius_neighborhood = config.getint('outlier filter','radius_neighborhood') #neighborhood radius for outlier filtering
 
 
     #lists of images
@@ -78,346 +80,73 @@ def main ():
     print('> Reading the images...')
     #show all the images in the stack scrolling through them with arrow keys
     plot_tracker(tomo_stack)
-    
-    if args.roi and args.norm and args.out:
-        '''
-        In this case the cropping, the normalization
-        and the outliers filtering of the images are performed.
-        After the preprocessing, the shift and the tilt angle of 
-        the axis of rotation of the sample with repsect to the 
-        central vertical axis of the images are computed.
-        So the user will be asked whether to correct or not the
-        tomographic images. If yes, the new images will be saved in
-        a specified path. If no, the rotation axis can be computed again.
-        '''
 
-        #preprocessing
+
+    #cropping
+    if args.roi:
         rowmin,rowmax,colmin,colmax = preprocess_and_correction.draw_ROI(tomo_0,'selection of ROI')
         preprocess_and_correction.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
-        tomo_stack_norm = preprocess_and_correction.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
-        tomo_stack_norm_filtered = preprocess_and_correction.outliers_filter(tomo_stack_norm,radius_neighborhood)
-        tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm_filtered)
+        print('> Tomographic projections:')
+        tomo_stack_preproc = preprocess_and_correction.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
         
-        #find axis and correction
-        condition = True
-        while condition:
-            y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_norm_filtered_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
-            preprocess_and_correction.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        #normalization and outliers filter (cropping)
+        if args.norm:
+            print('> Dark images:')
+            dark_stack_crop = preprocess_and_correction.cropping(dark_stack,rowmin,rowmax,colmin,colmax)
+            print('> Flat images:')
+            flat_stack_crop = preprocess_and_correction.cropping(flat_stack,rowmin,rowmax,colmin,colmax)
+            tomo_stack_preproc = preprocess_and_correction.normalization_no_ROI(tomo_stack_preproc, dark_stack_crop, flat_stack_crop)
             
-            ans= preprocess_and_correction.user_choice_for_correction()
-            if(ans=='Y' or ans=='y'):
-                condition = False
-                break
-            elif(ans=='N' or ans=='n'):
-                condition = True
-            elif(ans=='C' or ans=='c'):
-                print('> Script aborted.')
-                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
-                    os.remove(os.path.join(datapath,"data.txt"))
-                    sys.exit()
-                else:
-                    sys.exit()
+            if args.out:
+                tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack_preproc,radius_neighborhood)
+        
+        #outliers filter (cropping)
+        elif args.out:
+            tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack_preproc,radius_neighborhood)
+    
+    #no cropping
+    #normalization
+    elif args.norm:
+        tomo_stack_preproc = preprocess_and_correction.normalization_no_ROI(tomo_stack, dark_stack, flat_stack)
+        
+        #normalization and outlierss filter
+        if args.out:
+            tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack_preproc,radius_neighborhood)
+    
+    #outliers filter
+    elif args.out:
+        tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack,radius_neighborhood)
+
+
+    #select projections at 0° and 180°
+    tomo_stack_preproc_0, tomo_stack_preproc_180 = preparation_data.projection_0_180(last_angle,tomo_stack_preproc)
+
+#find axis and correction
+    condition = True
+    while condition:
+        y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_preproc_0,ystep=5)
+        m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_preproc_0,tomo_stack_preproc_180)
+        preprocess_and_correction.graph_axis_rotation(tomo_stack_preproc_0,tomo_stack_preproc_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        
+        ans= preprocess_and_correction.user_choice_for_correction()
+        if(ans=='Y' or ans=='y'):
+            condition = False
+            break
+        elif(ans=='N' or ans=='n'):
+            condition = True
+        elif(ans=='C' or ans=='c'):
+            print('> Script aborted.')
+            if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
+                os.remove(os.path.join(datapath,"data.txt"))
+                sys.exit()
             else:
-                print('Input not valid.')
+                sys.exit()
+        else:
+            print('Input not valid.')
 
-        tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_norm_filtered,middle_shift,theta,datapath)
-        preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
-        
-    if args.roi and args.norm and not args.out:
-        '''
-        In this case the cropping and the normalization of the images
-        are performed as preprocessing.
-        After that, the shift and the tilt angle of 
-        the axis of rotation of the sample with repsect to the 
-        central vertical axis of the images are computed.
-        So the user will be asked whether to correct or not the
-        tomographic images. If yes, the new images will be saved in
-        a specified path. If no, the rotation axis can be computed again.
-        '''
+    tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_preproc,middle_shift,theta,datapath)
+    preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
 
-        #preprocessing
-        rowmin,rowmax,colmin,colmax = preprocess_and_correction.draw_ROI(tomo_0,'selection of ROI')
-        preprocess_and_correction.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
-        tomo_stack_norm = preprocess_and_correction.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
-        tomo_stack_norm_0, tomo_stack_norm_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm)
-        
-        #find axis and correction
-        condition = True
-        while condition:
-            y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_norm_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
-            preprocess_and_correction.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        
-            ans= preprocess_and_correction.user_choice_for_correction()
-            if(ans=='Y' or ans=='y'):
-                condition = False
-                break
-            elif(ans=='N' or ans=='n'):
-                condition = True
-            elif(ans=='C' or ans=='c'):
-                print('> Script aborted.')
-                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
-                    os.remove(os.path.join(datapath,"data.txt"))
-                    sys.exit()
-                else:
-                    sys.exit()
-            else:
-                print('Input not valid.')
-        
-        tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_norm,middle_shift,theta,datapath)
-        preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
-
-    if args.roi and not args.norm and args.out:
-        '''
-        In this case the preprocessing consist in the cropping and
-        outliers filtering of the images.
-        After the preprocessing, the shift and the tilt angle of 
-        the axis of rotation of the sample with repsect to the 
-        central vertical axis of the images are computed.
-        So the user will be asked whether to correct or not the
-        tomographic images. If yes, the new images will be saved in
-        a specified path. If no, the rotation axis can be computed again.
-        '''
-
-        #preprocessing
-        rowmin,rowmax,colmin,colmax = preprocess_and_correction.draw_ROI(tomo_0,'selection of ROI')
-        preprocess_and_correction.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
-        tomo_stack_crop = preprocess_and_correction.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
-        tomo_stack_filtered = preprocess_and_correction.outliers_filter(tomo_stack_crop,radius_neighborhood)
-        tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
-        
-        #find axis and correction
-        condition = True
-        while condition:
-            y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_filtered_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
-            preprocess_and_correction.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        
-            ans= preprocess_and_correction.user_choice_for_correction()
-            if(ans=='Y' or ans=='y'):
-                condition = False
-                break
-            elif(ans=='N' or ans=='n'):
-                condition = True
-            elif(ans=='C' or ans=='c'):
-                print('> Script aborted.')
-                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
-                    os.remove(os.path.join(datapath,"data.txt"))
-                    sys.exit()
-                else:
-                    sys.exit()
-            else:
-                print('Input not valid.')
-        
-        tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_filtered,middle_shift,theta,datapath)
-        preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
-
-    if not args.roi and args.norm and args.out:
-        '''
-        In this case the the normalization
-        and the outliers filtering of the images are performed.
-        After the preprocessing, the shift and the tilt angle of 
-        the axis of rotation of the sample with repsect to the 
-        central vertical axis of the images are computed.
-        So the user will be asked whether to correct or not the
-        tomographic images. If yes, the new images will be saved in
-        a specified path. If no, the rotation axis can be computed again.
-        '''
-
-        #preprocessing
-        tomo_stack_norm = preprocess_and_correction.normalization_no_ROI(tomo_stack,dark_stack,flat_stack)
-        tomo_stack_norm_filtered = preprocess_and_correction.outliers_filter(tomo_stack_norm,radius_neighborhood)
-        tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm_filtered)
-        
-        #find axis and correction
-        condition = True
-        while condition:
-            y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_norm_filtered_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
-            preprocess_and_correction.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        
-            ans= preprocess_and_correction.user_choice_for_correction()
-            if(ans=='Y' or ans=='y'):
-                condition = False
-                break
-            elif(ans=='N' or ans=='n'):
-                condition = True
-            elif(ans=='C' or ans=='c'):
-                print('> Script aborted.')
-                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
-                    os.remove(os.path.join(datapath,"data.txt"))
-                    sys.exit()
-                else:
-                    sys.exit()
-            else:
-                print('Input not valid.')
-
-        tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_norm_filtered,middle_shift,theta,datapath)
-        preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
-
-    if args.roi and not args.norm and not args.out:
-        '''
-        In this case the preprocessing is the cropping of images.
-        After that, the shift and the tilt angle of 
-        the axis of rotation of the sample with repsect to the 
-        central vertical axis of the images are computed.
-        So the user will be asked whether to correct or not the
-        tomographic images. If yes, the new images will be saved in
-        a specified path. If no, the rotation axis can be computed again.
-        '''
-
-        #preprocessing
-        rowmin,rowmax,colmin,colmax = preprocess_and_correction.draw_ROI(tomo_0,'selection of ROI')
-        preprocess_and_correction.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
-        tomo_stack_crop = preprocess_and_correction.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
-        tomo_stack_crop_0,tomo_stack_crop_180 = preparation_data.projection_0_180(last_angle,tomo_stack_crop)
-        
-        #find axis and correction
-        condition = True
-        while condition:
-            y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_crop_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_crop_0,tomo_stack_crop_180)
-            preprocess_and_correction.graph_axis_rotation(tomo_stack_crop_0,tomo_stack_crop_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        
-            ans= preprocess_and_correction.user_choice_for_correction()
-            if(ans=='Y' or ans=='y'):
-                condition = False
-                break
-            elif(ans=='N' or ans=='n'):
-                condition = True
-            elif(ans=='C' or ans=='c'):
-                print('> Script aborted.')
-                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
-                    os.remove(os.path.join(datapath,"data.txt"))
-                    sys.exit()
-                else:
-                    sys.exit()
-            else:
-                print('Input not valid.')
-        
-        tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_crop,middle_shift,theta,datapath)
-        preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected)
-
-    if not args.roi and args.norm and not args.out:
-        '''
-        In this case the normalization of images is performed.
-        After the preprocessing, the shift and the tilt angle of 
-        the axis of rotation of the sample with repsect to the 
-        central vertical axis of the images are computed.
-        So the user will be asked whether to correct or not the
-        tomographic images. If yes, the new images will be saved in
-        a specified path. If no, the rotation axis can be computed again.
-        '''
-
-        #preprocessing
-        tomo_stack_norm = preprocess_and_correction.normalization_no_ROI(tomo_stack,dark_stack,flat_stack)
-        tomo_stack_norm_0, tomo_stack_norm_180 = preparation_data.projection_0_180(last_angle,tomo_stack_norm)
-        
-        #find axis and correction
-        condition = True
-        while condition:
-            y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_norm_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
-            preprocess_and_correction.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        
-            ans= preprocess_and_correction.user_choice_for_correction()
-            if(ans=='Y' or ans=='y'):
-                condition = False
-                break
-            elif(ans=='N' or ans=='n'):
-                condition = True
-            elif(ans=='C' or ans=='c'):
-                print('> Script aborted.')
-                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
-                    os.remove(os.path.join(datapath,"data.txt"))
-                    sys.exit()
-                else:
-                    sys.exit()
-            else:
-                print('Input not valid.')
-        
-        tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_norm,middle_shift,theta,datapath)
-        preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
-
-    if not args.roi and not args.norm and args.out:
-        '''
-        In this case the outliers filtering of images in performed
-        as preprocessing.
-        After that, the shift and the tilt angle of 
-        the axis of rotation of the sample with repsect to the 
-        central vertical axis of the images are computed.
-        So the user will be asked whether to correct or not the
-        tomographic images. If yes, the new images will be saved in
-        a specified path. If no, the rotation axis can be computed again.
-        '''
-
-        #preprocessing
-        tomo_stack_filtered = preprocess_and_correction.outliers_filter(tomo_stack,radius_neighborhood)
-        tomo_stack_filtered_0,tomo_stack_filtered_180 = preparation_data.projection_0_180(last_angle,tomo_stack_filtered)
-        
-        #find axis and correction
-        condition = True
-        while condition:
-            y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_filtered_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
-            preprocess_and_correction.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        
-            ans= preprocess_and_correction.user_choice_for_correction()
-            if(ans=='Y' or ans=='y'):
-                condition = False
-                break
-            elif(ans=='N' or ans=='n'):
-                condition = True
-            elif(ans=='C' or ans=='c'):
-                print('> Script aborted.')
-                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
-                    os.remove(os.path.join(datapath,"data.txt"))
-                    sys.exit()
-                else:
-                    sys.exit()
-            else:
-                print('Input not valid.')
-        
-        tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_filtered,middle_shift,theta,datapath)
-        preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
-
-    if not args.roi and not args.norm and not args.out:
-        '''
-        In this case no preprocessing is performed on the tomographic images.
-        Here the first step is the computation of the shift and 
-        the tilt angle of the axis of rotation of the sample with repsect to the 
-        central vertical axis of the images.
-        The user will be asked whether to correct or not the
-        tomographic images. If yes, the new images will be saved in
-        a specified path. If no, the rotation axis can be computed again.
-        '''
-        
-        #find axis and correction
-        condition = True
-        while condition:
-            y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_0,ystep=5)
-            m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_0,tomo_180)
-            preprocess_and_correction.graph_axis_rotation(tomo_0,tomo_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
-        
-            ans= preprocess_and_correction.user_choice_for_correction()
-            if(ans=='Y' or ans=='y'):
-                condition = False
-                break
-            elif(ans=='N' or ans=='n'):
-                condition = True
-            elif(ans=='C' or ans=='c'):
-                print('> Script aborted.')
-                if os.path.exists(os.path.join(datapath,"data.txt")):  #remove data.txt file if it exists
-                    os.remove(os.path.join(datapath,"data.txt"))
-                    sys.exit()
-                else:
-                    sys.exit()
-            else:
-                print('Input not valid.')
-        
-        tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack,middle_shift,theta,datapath)
-        preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
 
 
 if __name__ == '__main__':
