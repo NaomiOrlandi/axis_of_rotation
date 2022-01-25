@@ -1,12 +1,9 @@
 import matplotlib.pyplot as plt
 import neutompy as ntp
-import show_stack
 import numpy as np
-import os
 import cv2
 from matplotlib.offsetbox import AnchoredText
 import SimpleITK as sitk
-from tqdm import tqdm
 from neutompy.preproc.preproc import rotate_sitk as rotate_sitk
 
 
