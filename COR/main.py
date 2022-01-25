@@ -5,6 +5,7 @@ import os
 import preparation_data
 from show_stack import plot_tracker
 import preprocess_and_correction
+import user_interaction
 
 
 def parse_args ():
@@ -84,7 +85,7 @@ def main ():
 
     #cropping
     if args.roi:
-        rowmin,rowmax,colmin,colmax = preprocess_and_correction.draw_ROI(tomo_0,'selection of ROI')
+        rowmin,rowmax,colmin,colmax = user_interaction.draw_ROI(tomo_0,'selection of ROI')
         preprocess_and_correction.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
         print('> Tomographic projections:')
         tomo_stack_preproc = preprocess_and_correction.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
@@ -124,11 +125,11 @@ def main ():
 #find axis and correction
     condition = True
     while condition:
-        y_of_ROIs = preprocess_and_correction.ROIs_for_correction(tomo_stack_preproc_0,ystep=5)
+        y_of_ROIs = user_interaction.ROIs_for_correction(tomo_stack_preproc_0,ystep=5)
         m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_preproc_0,tomo_stack_preproc_180)
-        preprocess_and_correction.graph_axis_rotation(tomo_stack_preproc_0,tomo_stack_preproc_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        user_interaction.graph_axis_rotation(tomo_stack_preproc_0,tomo_stack_preproc_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-        ans= preprocess_and_correction.user_choice_for_correction()
+        ans= user_interaction.user_choice_for_correction()
         if(ans=='Y' or ans=='y'):
             condition = False
             break
