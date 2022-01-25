@@ -105,7 +105,7 @@ def main ():
             m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
             preprocess_and_correction.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
             
-            ans= preprocess_and_correction.question()
+            ans= preprocess_and_correction.user_choice_for_correction()
             if(ans=='Y' or ans=='y'):
                 condition = False
                 break
@@ -149,7 +149,7 @@ def main ():
             m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
             preprocess_and_correction.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-            ans= preprocess_and_correction.question()
+            ans= preprocess_and_correction.user_choice_for_correction()
             if(ans=='Y' or ans=='y'):
                 condition = False
                 break
@@ -194,7 +194,7 @@ def main ():
             m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
             preprocess_and_correction.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-            ans= preprocess_and_correction.question()
+            ans= preprocess_and_correction.user_choice_for_correction()
             if(ans=='Y' or ans=='y'):
                 condition = False
                 break
@@ -237,7 +237,7 @@ def main ():
             m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180)
             preprocess_and_correction.graph_axis_rotation(tomo_stack_norm_filtered_0,tomo_stack_norm_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-            ans= preprocess_and_correction.question()
+            ans= preprocess_and_correction.user_choice_for_correction()
             if(ans=='Y' or ans=='y'):
                 condition = False
                 break
@@ -280,7 +280,7 @@ def main ():
             m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_crop_0,tomo_stack_crop_180)
             preprocess_and_correction.graph_axis_rotation(tomo_stack_crop_0,tomo_stack_crop_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-            ans= preprocess_and_correction.question()
+            ans= preprocess_and_correction.user_choice_for_correction()
             if(ans=='Y' or ans=='y'):
                 condition = False
                 break
@@ -321,7 +321,7 @@ def main ():
             m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_norm_0,tomo_stack_norm_180)
             preprocess_and_correction.graph_axis_rotation(tomo_stack_norm_0,tomo_stack_norm_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-            ans= preprocess_and_correction.question()
+            ans= preprocess_and_correction.user_choice_for_correction()
             if(ans=='Y' or ans=='y'):
                 condition = False
                 break
@@ -363,7 +363,7 @@ def main ():
             m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_filtered_0,tomo_stack_filtered_180)
             preprocess_and_correction.graph_axis_rotation(tomo_stack_filtered_0,tomo_stack_filtered_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-            ans= preprocess_and_correction.question()
+            ans= preprocess_and_correction.user_choice_for_correction()
             if(ans=='Y' or ans=='y'):
                 condition = False
                 break
@@ -400,7 +400,7 @@ def main ():
             m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_0,tomo_180)
             preprocess_and_correction.graph_axis_rotation(tomo_0,tomo_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
-            ans= preprocess_and_correction.question()
+            ans= preprocess_and_correction.user_choice_for_correction()
             if(ans=='Y' or ans=='y'):
                 condition = False
                 break

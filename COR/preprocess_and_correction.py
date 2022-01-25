@@ -581,7 +581,7 @@ def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift
 
     plt.show()
 
-def question ():
+def user_choice_for_correction ():
     '''
     This function asks the user to choose whether to correct all the images [Y] 
     according to the computed shift and tilt angle of the axis of rotation
@@ -631,7 +631,7 @@ def correction_axis_rotation (img_stack,shift,theta,datapath):
 
     with open(os.path.join(datapath,'data.txt'),'a') as file:
         file.write('\nshift {0} \ntilt angle {1}'.format(shift,theta))
-        
+
     return img_stack
 
 def save_images (new_fname,img_stack,digits):
