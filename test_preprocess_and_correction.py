@@ -9,19 +9,42 @@ import cv2
 from hypothesis import given
 from hypothesis import settings
 import hypothesis.strategies as st
-from hypothesis.extra.numpy import arrays
+from hypothesis.extra.numpy import arrays,array_shapes
 
+
+np.random.seed(0)
+
+#strategy for the elements of arrays (floats)
+array_elements = st.floats(min_value=0,max_val=255,allow_nan=False, allow_infinity=False)
+array_elements_dark = st.floats(min_value=0,max_val=10,allow_nan=False, allow_infinity=False)
+array_elements_flat = st.floats(min_value=245,max_val=255,allow_nan=False, allow_infinity=False)
+#strategy for a 2D array (10x10)
+array_2D = arrays(float,(10,10),elements=array_elements,fill=st.nothing())
+
+int=st.integers(1,10)
+#strategy for list of 2 different sorted random integers in [0,4]
+list_rows = st.lists(st.integers(0,4),min_size=2,max_size=2).map(sorted).filter(lambda x : x[0] < x[1])
+list_columns = st.lists(st.integers(0,4),min_size=2,max_size=2).map(sorted).filter(lambda x : x[0] < x[1])
+#strategy for a list of 2 different sorted random integers in [0,9], used to select a ROI od array_2D
+list_yROI = st.lists(st.integers(0,9),min_size=2,max_size=2).map(sorted).filter(lambda x : x[0] < x[1])
+#strategy for a 3D array of floats (represents stack of images 5x5)
+array_for_stack = arrays(float,([int,5,5]),elements=array_elements,fill=st.nothing())
+
+#strategies for 3D array (5x5x5) with floats in [0,255]
+array_projections = arrays(float,([5,5,5]),elements=array_elements,fill=st.nothing())
+#strategies for 3D array (5x5x5) with floats in [245,255]
+array_flat = arrays(float,([5,5,5]),elements=array_elements_flat,fill=st.nothing())
+#strategies for 3D array (5x5x5) with floats in [0,10]
+array_dark = arrays(float,([5,5,5]),elements=array_elements_dark,fill=st.nothing())
 
 #==================================
 #PROPERTY TESTING
 #==================================
 
-@given(im_stack=arrays(dtype=float,shape=(np.random.randint(1,10),4,4),elements=st.floats(min_value=0,allow_nan=False, allow_infinity=False),fill=st.nothing()),
-       rowmin=st.integers(0,3),
-       rowmax=st.integers(0,3),
-       colmin=st.integers(0,3),
-       colmax=st.integers(0,3))
-def test_cropping_same_lenght (im_stack,rowmin,rowmax,colmin,colmax):
+@given(im_stack=array_for_stack,
+       rows_ROI = list_rows,
+       columns_ROI = list_columns)
+def test_cropping_same_lenght (im_stack,rows_ROI,columns_ROI):
     '''
     Test for the invariance of the number of images in
     the stack when images are cropped.
@@ -31,29 +54,118 @@ def test_cropping_same_lenght (im_stack,rowmin,rowmax,colmin,colmax):
     Given
     -----
     img_stack : ndarray
-        3D array of float numbers representing a stack of images. The 2D images are (10px x 10px)
-    rowmin,rowmax,colmin,colmax : int
-        random integers representing the coordinates of the cropping region of interest
+        3D array of float numbers representing a stack of images 5x5.
+    rows_ROI,columns_ROI : list
+        lists of two different sorted random integers representing the coordinates of the cropping region of interest (rows and columns)
+'''
+    rowmin=rows_ROI[0]
+    rowmax=rows_ROI[1]
+    colmin=columns_ROI[0]
+    colmax=columns_ROI[1]
+
+
+    im_stack_cropped=preprocess_and_correction.cropping(im_stack,rowmin,rowmax,colmin,colmax)
+
+    assert im_stack_cropped.shape[0] == im_stack.shape[0]
+
+    for i in range(len(im_stack_cropped.shape)):
+        assert im_stack_cropped.shape[i] <= im_stack.shape[i]
+
+
+
+@given(tomo_stack=array_projections,
+       flat_stack=array_flat,
+       dark_stack=array_dark)
+def test_normalization_same_dimensions (tomo_stack,flat_stack,dark_stack):
     '''
-    if rowmax < rowmin or colmax < colmin:
-        with pytest.raises(ValueError) as e:
-            preprocess_and_correction.cropping(im_stack,rowmin,rowmax,colmin,colmax)
-        assert str(e.value) == 'rowmin and colmin must be less than rowmax and colmax rispectively'
+    Test for the dimensions invariance of the stack of images
+    after their normalization.
+    
+    Given
+    -----
+    tomo_stack : ndarray
+        3D array of float numbers representing a stack of images with grey values between 0 and 255
+    flat_stack : ndarray
+        3D array of float numbers representing a stack of flat images with grey values between 245 and 255
+    dark_stack : ndarray
+        3D array of float numbers representing a stack of flat images with grey values between 0 and 10
+    '''
+    
+    stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
 
-    else:
-        im_stack_cropped=preprocess_and_correction.cropping(im_stack,rowmin,rowmax,colmin,colmax)
 
-        assert im_stack_cropped.shape[0] == im_stack.shape[0]
-
-        for i in range(len(im_stack_cropped.shape)):
-            assert im_stack_cropped.shape[i] <= im_stack.shape[i]
+    for j in range(len(stack_norm.shape)):
+            assert  stack_norm.shape[j] == tomo_stack.shape[j]
 
 
 
-@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(0,25,allow_nan=False),fill=st.nothing()),
-       flat_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(23,25,allow_nan=False),fill=st.nothing()),
-       dark_stack=arrays(dtype=float,shape=(np.random.randint(1,10),np.random.randint(1,5),np.random.randint(1,5)),elements=st.floats(0,2,allow_nan=False),fill=st.nothing()))
-def test_norm_no_ROI (tomo_stack,flat_stack,dark_stack):
+@given(tomo_stack=array_projections,
+       flat_stack=array_flat,
+       dark_stack=array_dark)
+def test_normalization_max_value (tomo_stack,flat_stack,dark_stack):
+    '''
+    THe test asserts that the max px value of the normalized images
+    is always equal or lower than the max px value of the inital images.
+    
+    Given
+    -----
+    tomo_stack : ndarray
+        3D array of float numbers representing a stack of images with grey values between 0 and 255
+    flat_stack : ndarray
+        3D array of float numbers representing a stack of flat images with grey values between 245 and 255
+    dark_stack : ndarray
+        3D array of float numbers representing a stack of flat images with grey values between 0 and 10
+    '''
+    
+    stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
+
+    list=[]
+    for i in range(stack_norm.shape[0]):
+        max_norm = np.max(stack_norm[i,:,:])
+        max_no_norm = np.max(tomo_stack[i,:,:])
+        h= max_norm <= max_no_norm
+        list.append(h)
+
+    res=all(l for l in list)
+    assert res
+
+
+@given(tomo_stack=array_projections,
+       flat_stack=array_flat,
+       dark_stack=array_dark)
+def test_normalization_min_value (tomo_stack,flat_stack,dark_stack):
+    '''
+    The test asserts that the min px value of the normalized images
+    is always equal or lower than the min px value of the inital images.
+    
+    Given
+    -----
+    tomo_stack : ndarray
+        3D array of float numbers representing a stack of images with grey values between 0 and 255
+    flat_stack : ndarray
+        3D array of float numbers representing a stack of flat images with grey values between 245 and 255
+    dark_stack : ndarray
+        3D array of float numbers representing a stack of flat images with grey values between 0 and 10
+    '''
+    
+    stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
+
+    list=[]
+    for i in range(stack_norm.shape[0]):
+        min_norm = np.min(stack_norm[i,:,:])
+        min_no_norm = np.min(tomo_stack[i,:,:])
+        h= min_norm <= min_no_norm
+        list.append(h)
+
+    res=all(l for l in list)
+    assert res
+
+
+
+@given(tomo_stack=array_projections,
+       flat_stack=array_flat,
+       dark_stack=array_dark)
+def test_normalization_values_in_interval (tomo_stack,flat_stack,dark_stack):
     '''
     Test for the dimensions invariance of the stack of images
     after their normalization.
@@ -63,93 +175,24 @@ def test_norm_no_ROI (tomo_stack,flat_stack,dark_stack):
     Given
     -----
     tomo_stack : ndarray
-        3D array of float numbers representing a stack of images with grey values between 0 and 25
+        3D array of float numbers representing a stack of images with grey values between 0 and 255
     flat_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 23 and 25
+        3D array of float numbers representing a stack of flat images with grey values between 245 and 255
     dark_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 0 and 2
+        3D array of float numbers representing a stack of flat images with grey values between 0 and 10
     '''
-    if tomo_stack.shape == flat_stack.shape and tomo_stack.shape == dark_stack.shape:
-        stack_norm = preprocess_and_correction.normalization_no_ROI(tomo_stack,dark_stack,flat_stack)
-
-        list=[]
-        for i in range(stack_norm.shape[0]):
-            max_norm = np.max(stack_norm[i,:,:])
-            max_no_norm = np.max(tomo_stack[i,:,:])
-            h= max_norm <= max_no_norm
-            list.append(h)
-
-        res=all(l for l in list)
-        assert res
-
-        for j in range(len(stack_norm.shape)):
-            assert tomo_stack.shape[j] == stack_norm.shape[j]
-        
-    else:
-        with pytest.raises(ValueError) as err:
-            preprocess_and_correction.normalization_no_ROI(tomo_stack,dark_stack,flat_stack)
-        assert str(err.value) == 'the stack of images (tomographic projections,flat images and dark images) must have the same dimensions'
+    
+    stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
+    
+    and_result = all(np.logical_and(stack_norm>=0,stack_norm<=1))
+    assert and_result
+    
 
 
-@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),5,5),elements=st.floats(0,25,allow_nan=False),fill=st.nothing()),
-       flat_stack=arrays(dtype=float,shape=(np.random.randint(1,10),5,5),elements=st.floats(23,25,allow_nan=False),fill=st.nothing()),
-       dark_stack=arrays(dtype=float,shape=(np.random.randint(1,10),5,5),elements=st.floats(0,2,allow_nan=False),fill=st.nothing()),
-       rowmin=st.integers(0,4),
-       rowmax=st.integers(0,4),
-       colmin=st.integers(0,4),
-       colmax=st.integers(0,4))
-def test_norm_ROI (tomo_stack,flat_stack,dark_stack,rowmin,rowmax,colmin,colmax):
-    '''
-    Test for the dimensions invariance of the cropped stack of images
-    after their normalization, condsidering a cropping region of interest.
-    It even even asserts that the max px value of the normalized images
-    is always equal or lower than the max px value of the inital images.
-
-    Given
-    -----
-    tomo_stack : ndarray
-        3D array of float numbers representing a stack of images (5x5) with grey values between 0 and 25
-    flat_stack : ndarray
-        3D array of float numbers representing a stack of flat images (5x5) with grey values between 23 and 25
-    dark_stack : ndarray
-        3D array of float numbers representing a stack of flat images (5x5) with grey values between 0 and 2
-    rowmin,rowmax,colmin,colmax : int
-        random integers representing the coordinates of the cropping region of interest
-    '''
-    if tomo_stack.shape == flat_stack.shape and tomo_stack.shape == dark_stack.shape:
-
-        if rowmin <= rowmax and colmin <= colmax:
-            stack_norm = preprocess_and_correction.normalization_no_ROI(tomo_stack,dark_stack,flat_stack)
-
-            list=[]
-            new_dim = (tomo_stack.shape[0],rowmax-rowmin,colmax-colmin)
-
-            for i in range(stack_norm.shape[0]):
-                max_norm = np.max(stack_norm[i,:,:])
-                max_no_norm = np.max(tomo_stack[i,rowmin:rowmax,colmin:colmax])
-                h= max_norm <= max_no_norm
-                list.append(h)
-                res=all(l for l in list)
-            assert res
-            
-            for j in range(len(stack_norm.shape)):
-                assert new_dim[j] <= stack_norm.shape[j]
-
-        else:
-            with pytest.raises(ValueError) as err:
-                preprocess_and_correction.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
-            assert str(err.value) == 'rowmin and colmin must be less than rowmax and colmax rispectively'
-
-    else:
-        with pytest.raises(ValueError) as e:
-            preprocess_and_correction.normalization_with_ROI(tomo_stack,dark_stack,flat_stack,rowmin,rowmax,colmin,colmax)
-        assert str(e.value) == 'the stack of images (tomographic projections,flat images and dark images) must have the same dimensions'
-
-
-@given(tomo_stack=arrays(dtype=float,shape=(np.random.randint(1,10),4,4),elements=st.floats(0,255,allow_nan=False),fill=st.nothing()),
-       ans = st.characters(),
-       neighboors = st.integers(1,10))
-def test_out_filter (tomo_stack,ans,neighboors):
+@given(tomo_stack=array_for_stack,
+       ans = st.text().filter(lambda x : x in ['a','A','b','B','d','D']),
+       neighboors = st.integers(1,3))
+def test_out_filter_same_dimensions (tomo_stack,ans,neighboors):
     '''
     Test for the invariance of the dimensions of an image stack
     after the filtering from outliers of all images.
@@ -167,54 +210,34 @@ def test_out_filter (tomo_stack,ans,neighboors):
     neighbooors : int
        random integer representing the neighborhood radius considered when the filtering is performed 
     '''
-    ans_acc = ['b','B','d','D','a','A']
-
-    if any(ans == i for i in ans_acc):
-        with mock.patch('builtins.input',return_value=ans):
-            tomo_stack_filt = preprocess_and_correction.outliers_filter(tomo_stack,neighboors)
-            for j in range(len(tomo_stack.shape)):
-                assert tomo_stack.shape[j] == tomo_stack_filt.shape[j]
-
-    else:
-        with mock.patch('builtins.input',return_value=ans):
-            with pytest.raises(IOError) as err:
-                preprocess_and_correction.outliers_filter(tomo_stack,neighboors)
-            assert str(err.value) == 'Input not valid.'
+    
+    with mock.patch('builtins.input',return_value=ans):
+        tomo_stack_filt = preprocess_and_correction.outliers_filter(tomo_stack,neighboors)
+        for j in range(len(tomo_stack.shape)):
+            assert tomo_stack.shape[j] == tomo_stack_filt.shape[j]
 
 
-@given(projection=arrays(dtype=float,shape=(10,10),elements=st.floats(1,255,allow_nan=False),fill=st.nothing()),
-       ymin=st.integers(0,9),
-       ymax=st.integers(0,9))
+
+@given(projection=array_2D,
+       yROI_list=list_yROI)
 @settings(deadline=None)
-def test_find_offset_angle (projection,ymin,ymax):
+def test_find_offset_angle (projection,yROI_list):
     '''
-    Test for the type of the returned values of the function
-    that finds the shift and the tilt angle of the rotation axis
-    (preprocess_and_correction.find_shift_and_tilt_angle()).
-    It even asserts that the tilt angle is between -90° and +90°.
+    The test asserts that the tilt angle is between -90° and +90°.
 
     Given
     -----
     projection : ndarray
         2D array representing an image (10x10)
-    ymin,ymax : int
-        random integers that represent the minimum and the maximun y coordinates
+    yROI_list : list
+        list of two different sorted random integers in [0,9] that represent the minimum and the maximun y coordinates
         of the image to consider for the analysis
 
     '''
-    yROI=np.arange(min(ymin,ymax),max(ymin,ymax)+1,1) #+1 to include the last value
 
-    if ymin == ymax:
-        with pytest.raises(ValueError) as err:
-            preprocess_and_correction.find_shift_and_tilt_angle(yROI,projection,projection)
-        assert str(err.value) == 'ROI height must be greater than zero'
+    yROI=np.arange(yROI_list[0],yROI_list[1]+1,1) #+1 to include the last value
 
-    else:
-        m,q,shift,offset,middle_shift,theta= preprocess_and_correction.find_shift_and_tilt_angle(yROI,projection,projection)
-        assert type(offset) == type(theta) == type(m) == type(q) == np.float64
-        assert type(middle_shift) == np.int32
-        assert type(shift) == np.ndarray
-        assert theta <= 90.0 and theta >= -90.0
+    assert abs(preprocess_and_correction.find_shift_and_tilt_angle(yROI,projection,projection)[-1]) <= 90.0
 
 
 
@@ -262,7 +285,7 @@ def test_cropping_bad_coordinates ():
         preprocess_and_correction.cropping(img_array,rowmin,rowmax,colmin,colmax)
     assert str(e.value) == 'rowmin and colmin must be less than rowmax and colmax rispectively'
 
-def test_normalization_no_ROI_max_val():
+def test_normalization_max_val():
     '''
     This test asserts that the max px value of the normalized images
     is always equal or lower than the max px value of the inital images.
@@ -282,7 +305,7 @@ def test_normalization_no_ROI_max_val():
     darkar=preparation_data.create_array(darklist,imlist)
     flatar=preparation_data.create_array(flatlist,imlist)
 
-    im_norm = preprocess_and_correction.normalization_no_ROI(imar,darkar,flatar)
+    im_norm = preprocess_and_correction.normalization(imar,darkar,flatar)
 
     list=[]
     for i in range(im_norm.shape[0]):
@@ -294,7 +317,7 @@ def test_normalization_no_ROI_max_val():
     res=all(l for l in list)
     assert res
 
-def test_normalization_no_ROI_same_dimensions():
+def test_normalization_same_dimensions():
     '''
     This test asserts that the dimensions of the stack of normalized images
     is equal to the dimensions of the stack of inital images.
@@ -314,7 +337,7 @@ def test_normalization_no_ROI_same_dimensions():
     darkar=preparation_data.create_array(darklist,imlist)
     flatar=preparation_data.create_array(flatlist,imlist)
 
-    im_norm = preprocess_and_correction.normalization_no_ROI(imar,darkar,flatar)
+    im_norm = preprocess_and_correction.normalization(imar,darkar,flatar)
 
     for i in range(len(im_norm.shape)):
         assert imar.shape[i] == im_norm.shape[i]
