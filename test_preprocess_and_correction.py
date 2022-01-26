@@ -4,10 +4,11 @@ import pytest
 from COR import preparation_data
 from COR import preprocess_and_correction
 import numpy as np
+import math
 from unittest import mock
 import cv2
 from hypothesis import given
-from hypothesis import settings
+from hypothesis import settings,HealthCheck
 import hypothesis.strategies as st
 from hypothesis.extra.numpy import arrays,array_shapes
 
@@ -15,20 +16,20 @@ from hypothesis.extra.numpy import arrays,array_shapes
 np.random.seed(0)
 
 #strategy for the elements of arrays (floats)
-array_elements = st.floats(min_value=0,max_val=255,allow_nan=False, allow_infinity=False)
-array_elements_dark = st.floats(min_value=0,max_val=10,allow_nan=False, allow_infinity=False)
-array_elements_flat = st.floats(min_value=245,max_val=255,allow_nan=False, allow_infinity=False)
+array_elements = st.floats(min_value=1,max_value=255,allow_nan=False, allow_infinity=False)
+array_elements_dark = st.floats(min_value=0,max_value=10,allow_nan=False, allow_infinity=False)
+array_elements_flat = st.floats(min_value=245,max_value=255,allow_nan=False, allow_infinity=False)
 #strategy for a 2D array (10x10)
 array_2D = arrays(float,(10,10),elements=array_elements,fill=st.nothing())
 
-int=st.integers(1,10)
+
 #strategy for list of 2 different sorted random integers in [0,4]
 list_rows = st.lists(st.integers(0,4),min_size=2,max_size=2).map(sorted).filter(lambda x : x[0] < x[1])
 list_columns = st.lists(st.integers(0,4),min_size=2,max_size=2).map(sorted).filter(lambda x : x[0] < x[1])
 #strategy for a list of 2 different sorted random integers in [0,9], used to select a ROI od array_2D
 list_yROI = st.lists(st.integers(0,9),min_size=2,max_size=2).map(sorted).filter(lambda x : x[0] < x[1])
 #strategy for a 3D array of floats (represents stack of images 5x5)
-array_for_stack = arrays(float,([int,5,5]),elements=array_elements,fill=st.nothing())
+array_for_stack = arrays(float,([10,5,5]),elements=array_elements,fill=st.nothing())
 
 #strategies for 3D array (5x5x5) with floats in [0,255]
 array_projections = arrays(float,([5,5,5]),elements=array_elements,fill=st.nothing())
@@ -72,7 +73,7 @@ def test_cropping_same_lenght (im_stack,rows_ROI,columns_ROI):
         assert im_stack_cropped.shape[i] <= im_stack.shape[i]
 
 
-
+#TO DO:check for the type of arrays for stack
 @given(tomo_stack=array_projections,
        flat_stack=array_flat,
        dark_stack=array_dark)
@@ -190,8 +191,9 @@ def test_normalization_values_in_interval (tomo_stack,flat_stack,dark_stack):
 
 
 @given(tomo_stack=array_for_stack,
-       ans = st.text().filter(lambda x : x in ['a','A','b','B','d','D']),
+       ans = st.text(alphabet= list('aAbBdD'), min_size=1,max_size=1),
        neighboors = st.integers(1,3))
+@settings(suppress_health_check=[HealthCheck.filter_too_much])
 def test_out_filter_same_dimensions (tomo_stack,ans,neighboors):
     '''
     Test for the invariance of the dimensions of an image stack
@@ -249,25 +251,22 @@ def test_cropping_good_coordinates():
     '''
     Test for the invariance of the number of images in
     the stack when images are cropped.
-    Acceptable coordinates for the cropping ROI (rowmin <= rowmax and colmin <= colmax)
-    are randomly generated.
-    It even asserts that the dimensions of the new images
-    are equal or smaller than the initial images
+    The test asserts even that the dimensions of the cropped images correspond to the number
+    of rows and the number of columns selected.
     '''
     #random 3D array to represent en image stack
-    img_array= np.random.rand(10,20,20)
+    img_array= np.random.rand(10,10,10)
     #coordinates for the ROI
-    rowmin = np.random.randint(0,20)
-    rowmax = np.random.randint(rowmin,20)
-    colmin = np.random.randint(0,20)
-    colmax = np.random.randint(colmin,20)
+    rowmin = 4
+    rowmax = 8
+    colmin = 4
+    colmax = 8
     
     img_array_cropped=preprocess_and_correction.cropping(img_array,rowmin,rowmax,colmin,colmax)
 
     assert img_array_cropped.shape[0] == img_array.shape[0]
-
-    for i in range(len(img_array_cropped.shape)):
-        assert img_array_cropped.shape[i] <= img_array.shape[i]
+    assert img_array_cropped.shape[1] == 4
+    assert img_array_cropped.shape[2] == 4
 
 def test_cropping_bad_coordinates ():
     '''
@@ -275,15 +274,28 @@ def test_cropping_bad_coordinates ():
     are given as input to the cropping function (preprocess_and_correction.cropping()),
     that crop all the images in a stack.
     '''
-    img_array= np.random.rand(10,20,20)
-    rowmax = np.random.randint(0,20)
-    rowmin = np.random.randint(rowmax,20)
-    colmax = np.random.randint(0,20)
-    colmin = np.random.randint(colmax,20)
+    img_array= np.random.rand(10,10,10)
+    rowmax =2
+    rowmin = 5
+    colmax = 3
+    colmin = 6
     
     with pytest.raises(ValueError) as e:
         preprocess_and_correction.cropping(img_array,rowmin,rowmax,colmin,colmax)
     assert str(e.value) == 'rowmin and colmin must be less than rowmax and colmax rispectively'
+
+
+def croping_ROI_as_the_image ():
+    '''
+    Test for the invariance of the dimensions of the 3D array containing
+    2D images when images are cropped considering a ROI with the same size of the 2D images.
+    '''
+    img_array= np.random.rand(10,10,10)
+    rowmin=colmin=0
+    rowmax=colmax=9
+
+    assert preprocess_and_correction.cropping(img_array,rowmin,rowmax,colmin,colmax).shape == img_array.shape
+
 
 def test_normalization_max_val():
     '''
@@ -317,6 +329,38 @@ def test_normalization_max_val():
     res=all(l for l in list)
     assert res
 
+def test_normalization_max_val():
+    '''
+    This test asserts that the min px value of the normalized images
+    is always equal or lower than the min px value of the inital images.
+    A set of 11 tomographic projections, contained in the path 'filepath',
+    and a dark image and a flat image, contained rispectively in the paths 
+    'darkpath' and 'flatpath', are used in the test.
+    '''
+    filepath='testing_images\\tomography\\projections'
+    darkpath='testing_images\\tomography\\dark'
+    flatpath='testing_images\\tomography\\flat'
+
+    imlist=preparation_data.reader_gray_images(filepath)
+    darklist=preparation_data.reader_gray_images(darkpath)
+    flatlist=preparation_data.reader_gray_images(flatpath)
+
+    imar=preparation_data.create_array(imlist,imlist)
+    darkar=preparation_data.create_array(darklist,imlist)
+    flatar=preparation_data.create_array(flatlist,imlist)
+
+    im_norm = preprocess_and_correction.normalization(imar,darkar,flatar)
+
+    list=[]
+    for i in range(im_norm.shape[0]):
+        min_norm = np.min(im_norm[i,:,:])
+        min_no_norm = np.min(imar[i,:,:])
+        h= min_norm <= min_no_norm
+        list.append(h)
+
+    res=all(l for l in list)
+    assert res
+
 def test_normalization_same_dimensions():
     '''
     This test asserts that the dimensions of the stack of normalized images
@@ -342,77 +386,32 @@ def test_normalization_same_dimensions():
     for i in range(len(im_norm.shape)):
         assert imar.shape[i] == im_norm.shape[i]
 
-def test_normalization_ROI_max_val():
+
+def test_norm_mean ():
     '''
-    This test asserts that the max px value of the normalized images
-    is always equal or lower than the max px value of the inital images.
-    The normalization is performed on cropped images.
-    The coordinates of the crop ROI are randomly generated.
-    A set of 11 tomographic projections, contained in the path 'filepath',
-    and a dark image and a flat image, contained rispectively in the paths 
-    'darkpath' and 'flatpath', are used in the test.
+    This test asserts that the mean of the normalized images is related to the mean
+    of the initial images by the function used for the normalization: (I-Imin)/(Imax-Imin).
+    See the documentation in README.md file or the function preprocess_and_correction.normalization ()
+    for more details.
     '''
-    filepath='testing_images\\tomography\\projections'
-    darkpath='testing_images\\tomography\\dark'
-    flatpath='testing_images\\tomography\\flat'
+    img = np.array(([3,3,5],[7,6,6],[4,5,3]),np.float32)
+    img_dark = np.array(([3,3,3],[3,3,3],[3,3,3]),np.float32)
+    img_flat = np.array(([7,7,7],[7,7,7],[7,7,7]),np.float32)
+    mean_min = np.mean(img_dark)
+    mean_max = np.mean(img_flat)
+    flat_array = np.full((3,3,3),img_flat)
+    dark_array = np.full((3,3,3),img_dark)
+    img_array = np.full((3,3,3),img)
+    mean_img = np.mean(img)
+    mean_norm = (mean_img - mean_min)/(mean_max - mean_min)
 
-    imlist=preparation_data.reader_gray_images(filepath)
-    darklist=preparation_data.reader_gray_images(darkpath)
-    flatlist=preparation_data.reader_gray_images(flatpath)
+    norm_stack = preprocess_and_correction.normalization(img_array,dark_array,flat_array)
 
-    imar=preparation_data.create_array(imlist,imlist)
-    darkar=preparation_data.create_array(darklist,imlist)
-    flatar=preparation_data.create_array(flatlist,imlist)
-
-    rowmin = np.random.randint(0,999)
-    rowmax = np.random.randint(rowmin,999)
-    colmin = np.random.randint(0,1099)
-    colmax = np.random.randint(colmin,1099)
-
-    im_norm = preprocess_and_correction.normalization_with_ROI(imar,darkar,flatar,rowmin,rowmax,colmin,colmax)
-
-    list=[]
-    for i in range(im_norm.shape[0]):
-        max_norm = np.max(im_norm[i,:,:])
-        max_no_norm = np.max(imar[i,rowmin:rowmax,colmin:colmax])
-        h= max_norm <= max_no_norm
-        list.append(h)
-
-    res=all(l for l in list)
-    assert res
-
-def test_normalization_ROI_same_dim ():
-    '''
-    This test asserts that the dimensions of the stack of  normalized cropped images
-    is equal to the dimensions of the stack of the cropped inital images.
-    The coordinates of the crop ROI are randomly generated.
-    A set of 11 tomographic projections, contained in the path 'filepath',
-    and a dark image and a flat image, contained rispectively in the paths 
-    'darkpath' and 'flatpath', are used in the test.
-    '''
-    filepath='testing_images\\tomography\\projections'
-    darkpath='testing_images\\tomography\\dark'
-    flatpath='testing_images\\tomography\\flat'
-
-    imlist=preparation_data.reader_gray_images(filepath)
-    darklist=preparation_data.reader_gray_images(darkpath)
-    flatlist=preparation_data.reader_gray_images(flatpath)
-
-    imar=preparation_data.create_array(imlist,imlist)
-    darkar=preparation_data.create_array(darklist,imlist)
-    flatar=preparation_data.create_array(flatlist,imlist)
-
-    rowmin = np.random.randint(0,999)
-    rowmax = np.random.randint(rowmin,999)
-    colmin = np.random.randint(0,1099)
-    colmax = np.random.randint(colmin,1099)
-
-    new_dim = (imar.shape[0],rowmax-rowmin,colmax-colmin)
-
-    im_norm = preprocess_and_correction.normalization_with_ROI(imar,darkar,flatar,rowmin,rowmax,colmin,colmax)
+    for i in range(norm_stack.shape[0]):
+        assert math.isclose(np.mean(norm_stack[i-1,:,:]),mean_norm,rel_tol=1e-06)
     
-    for i in range(len(im_norm.shape)):
-        assert im_norm.shape[i] == new_dim[i]
+    
+
 
 def test_outliers_filter_bright_spot_image_b():
     '''
@@ -452,7 +451,8 @@ def test_outliers_filter_bright_spot_image_a():
         im_stack_filt = preprocess_and_correction.outliers_filter(im_stack,5)
         
         for i in range(3):
-            assert np.max(im_stack_filt[i]) == np.min(im_stack_filt[i]) == 0.0
+            assert np.max(im_stack_filt[i]) == 0.0
+            assert np.min(im_stack_filt[i]) == 0.0
 
 def test_outliers_filter_bright_spot_image_d():
     '''
@@ -492,7 +492,8 @@ def test_outliers_filter_dark_spot_image_d():
         im_stack_filt = preprocess_and_correction.outliers_filter(im_stack,5)
         
         for i in range(3):
-            assert np.max(im_stack_filt[i]) == np.min(im_stack_filt[i]) == 255.0
+            assert np.max(im_stack_filt[i]) == 255.0
+            assert np.min(im_stack_filt[i]) == 255.0
 
 def test_outliers_filter_dark_spot_image_a():
     '''
@@ -512,7 +513,8 @@ def test_outliers_filter_dark_spot_image_a():
         im_stack_filt = preprocess_and_correction.outliers_filter(im_stack,5)
         
         for i in range(3):
-            assert np.max(im_stack_filt[i]) == np.min(im_stack_filt[i]) == 255.0
+            assert np.max(im_stack_filt[i]) == 255.0
+            assert np.min(im_stack_filt[i]) == 255.0
 
 def test_outliers_filter_dark_spot_image_b():
     '''
@@ -534,6 +536,24 @@ def test_outliers_filter_dark_spot_image_b():
         for i in range(3):
             assert np.max(im_stack_filt[i]) == 255.0 
             assert np.min(im_stack_filt[i]) == 0.0
+
+
+def test_outlier_filter_order ():
+    '''
+    '''
+    stack = np.random.rand(10,10,10)
+
+    with mock.patch('builtins.input',return_value='b'):
+        stack_bd1 = preprocess_and_correction.outliers_filter(stack,3)
+    with mock.patch('builtins.input',return_value='d'):
+        stack_bd2 = preprocess_and_correction.outliers_filter(stack_bd1,3)
+
+    with mock.patch('builtins.input',return_value='d'):
+        stack_db1 = preprocess_and_correction.outliers_filter(stack,3)
+    with mock.patch('builtins.input',return_value='b'):
+        stack_db2 = preprocess_and_correction.outliers_filter(stack_db1,3)
+
+    assert np.array_equal(stack_bd1,stack_db2) == True
 
 def test_find_shift_and_theta_obj_shifted_and_tilted ():
     '''
