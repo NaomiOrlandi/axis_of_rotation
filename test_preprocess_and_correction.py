@@ -8,17 +8,18 @@ import math
 from unittest import mock
 import cv2
 from hypothesis import given
-from hypothesis import settings,HealthCheck
+from hypothesis import settings
 import hypothesis.strategies as st
-from hypothesis.extra.numpy import arrays,array_shapes
+from hypothesis.extra.numpy import arrays
+
 
 
 np.random.seed(0)
 
 #strategy for the elements of arrays (floats)
-array_elements = st.floats(min_value=1,max_value=255,allow_nan=False, allow_infinity=False)
-array_elements_dark = st.floats(min_value=0,max_value=10,allow_nan=False, allow_infinity=False)
-array_elements_flat = st.floats(min_value=245,max_value=255,allow_nan=False, allow_infinity=False)
+array_elements = st.floats(min_value=1,max_value=250,allow_nan=False, allow_infinity=False,width=32)
+array_elements_dark = st.floats(min_value=1,max_value=10,allow_nan=False, allow_infinity=False,width=32)
+array_elements_flat = st.floats(min_value=250,max_value=255,allow_nan=False, allow_infinity=False,width=32)
 #strategy for a 2D array (10x10)
 array_2D = arrays(float,(10,10),elements=array_elements,fill=st.nothing())
 
@@ -32,11 +33,11 @@ list_yROI = st.lists(st.integers(0,9),min_size=2,max_size=2).map(sorted).filter(
 array_for_stack = arrays(float,([10,5,5]),elements=array_elements,fill=st.nothing())
 
 #strategies for 3D array (5x5x5) with floats in [0,255]
-array_projections = arrays(float,([5,5,5]),elements=array_elements,fill=st.nothing())
+array_projections = arrays(np.float32,([5,5,5]),elements=array_elements,fill=st.nothing())
 #strategies for 3D array (5x5x5) with floats in [245,255]
-array_flat = arrays(float,([5,5,5]),elements=array_elements_flat,fill=st.nothing())
+array_flat = arrays(np.float32,([5,5,5]),elements=array_elements_flat,fill=st.nothing())
 #strategies for 3D array (5x5x5) with floats in [0,10]
-array_dark = arrays(float,([5,5,5]),elements=array_elements_dark,fill=st.nothing())
+array_dark = arrays(np.float32,([5,5,5]),elements=array_elements_dark,fill=st.nothing())
 
 #==================================
 #PROPERTY TESTING
@@ -85,11 +86,11 @@ def test_normalization_same_dimensions (tomo_stack,flat_stack,dark_stack):
     Given
     -----
     tomo_stack : ndarray
-        3D array of float numbers representing a stack of images with grey values between 0 and 255
+        3D array of float numbers representing a stack of images with grey values between 1 and 250
     flat_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 245 and 255
+        3D array of float numbers representing a stack of flat images with grey values between 250 and 255
     dark_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 0 and 10
+        3D array of float numbers representing a stack of flat images with grey values between 1 and 10
     '''
     
     stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
@@ -111,11 +112,11 @@ def test_normalization_max_value (tomo_stack,flat_stack,dark_stack):
     Given
     -----
     tomo_stack : ndarray
-        3D array of float numbers representing a stack of images with grey values between 0 and 255
+        3D array of float numbers representing a stack of images with grey values between 1 and 250
     flat_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 245 and 255
+        3D array of float numbers representing a stack of flat images with grey values between 250 and 255
     dark_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 0 and 10
+        3D array of float numbers representing a stack of flat images with grey values between 1 and 10
     '''
     
     stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
@@ -142,11 +143,11 @@ def test_normalization_min_value (tomo_stack,flat_stack,dark_stack):
     Given
     -----
     tomo_stack : ndarray
-        3D array of float numbers representing a stack of images with grey values between 0 and 255
+        3D array of float numbers representing a stack of images with grey values between 1 and 250
     flat_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 245 and 255
+        3D array of float numbers representing a stack of flat images with grey values between 250 and 255
     dark_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 0 and 10
+        3D array of float numbers representing a stack of flat images with grey values between 1 and 10
     '''
     
     stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
@@ -176,24 +177,25 @@ def test_normalization_values_in_interval (tomo_stack,flat_stack,dark_stack):
     Given
     -----
     tomo_stack : ndarray
-        3D array of float numbers representing a stack of images with grey values between 0 and 255
+        3D array of float numbers representing a stack of images with grey values between 1 and 250
     flat_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 245 and 255
+        3D array of float numbers representing a stack of flat images with grey values between 250 and 255
     dark_stack : ndarray
-        3D array of float numbers representing a stack of flat images with grey values between 0 and 10
+        3D array of float numbers representing a stack of flat images with grey values between 1 and 10
     '''
     
     stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
     
-    and_result = all(np.logical_and(stack_norm>=0,stack_norm<=1))
-    assert and_result
+    and_result = np.logical_and(stack_norm>=0,stack_norm<=1)
+    all_result = np.all(and_result)
+    assert all_result
     
 
 
 @given(tomo_stack=array_for_stack,
        ans = st.text(alphabet= list('aAbBdD'), min_size=1,max_size=1),
        neighboors = st.integers(1,3))
-@settings(suppress_health_check=[HealthCheck.filter_too_much])
+#@settings(suppress_health_check=[HealthCheck.filter_too_much])
 def test_out_filter_same_dimensions (tomo_stack,ans,neighboors):
     '''
     Test for the invariance of the dimensions of an image stack
@@ -390,27 +392,28 @@ def test_normalization_same_dimensions():
 def test_norm_mean ():
     '''
     This test asserts that the mean of the normalized images is related to the mean
-    of the initial images by the function used for the normalization: (I-Imin)/(Imax-Imin).
+    of the initial images by the function used for the normalization: (I-mean(Imin))/(mean(Imax)-mean(Imin)).
     See the documentation in README.md file or the function preprocess_and_correction.normalization ()
     for more details.
     '''
-    img = np.array(([3,3,5],[7,6,6],[4,5,3]),np.float32)
-    img_dark = np.array(([3,3,3],[3,3,3],[3,3,3]),np.float32)
-    img_flat = np.array(([7,7,7],[7,7,7],[7,7,7]),np.float32)
-    mean_min = np.mean(img_dark)
-    mean_max = np.mean(img_flat)
-    flat_array = np.full((3,3,3),img_flat)
-    dark_array = np.full((3,3,3),img_dark)
-    img_array = np.full((3,3,3),img)
-    mean_img = np.mean(img)
-    mean_norm = (mean_img - mean_min)/(mean_max - mean_min)
 
-    norm_stack = preprocess_and_correction.normalization(img_array,dark_array,flat_array)
+    filepath='testing_images\\tomography\\projections'
+    darkpath='testing_images\\tomography\\dark'
+    flatpath='testing_images\\tomography\\flat'
+
+    imlist=preparation_data.reader_gray_images(filepath)
+    darklist=preparation_data.reader_gray_images(darkpath)
+    flatlist=preparation_data.reader_gray_images(flatpath)
+
+    imar=preparation_data.create_array(imlist,imlist)
+    darkar=preparation_data.create_array(darklist,imlist)
+    flatar=preparation_data.create_array(flatlist,imlist)
+
+    norm_stack = preprocess_and_correction.normalization(imar,darkar,flatar)
 
     for i in range(norm_stack.shape[0]):
-        assert math.isclose(np.mean(norm_stack[i-1,:,:]),mean_norm,rel_tol=1e-06)
-    
-    
+        res = (np.mean(imar[i-1,:,:])-np.mean(darkar[i-1,:,:]))/(np.mean(flatar[i-1,:,:])-np.mean(darkar[i-1,:,:]))
+        assert math.isclose(np.mean(norm_stack[i-1,:,:]),res,rel_tol=1e-01)
 
 
 def test_outliers_filter_bright_spot_image_b():
@@ -540,6 +543,11 @@ def test_outliers_filter_dark_spot_image_b():
 
 def test_outlier_filter_order ():
     '''
+    This test assert that the order of application of the 
+    outlier_filter for bright or dark outliers does not influence
+    the result. In other words, the application of firstly the bright outlier
+    filter and secondly of the dark outlier filter produces the same result
+    of the inverse application.
     '''
     stack = np.random.rand(10,10,10)
 
