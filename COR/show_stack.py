@@ -2,7 +2,18 @@ import matplotlib.pyplot as plt
 
 
 class IndexTracker:
+    '''
+    In this class all the characteristics for the visualization of 
+    a stack of images are set.
+    '''
     def __init__(self, ax, X):
+        '''
+        this method create a image window with title 'use arrow keys to navigate images'
+        to show in gray-level map the stack X, which has 3 dimensions, one for the slices, one for 
+        the rows and one for the columns.
+        The visualization starts with the slice in the middle of the stack.
+        '''
+
         self.ax = ax
         ax.set_title('use arrow keys to navigate images')
 
@@ -27,6 +38,10 @@ class IndexTracker:
         self.update()
 
     def update(self):
+        '''
+        This method update the visualizad slice and the label
+        of y-axis when the slice changes.'''
+
         self.im.set_data(self.X[self.ind, :, :])
         self.ax.set_ylabel('projection %s' % self.ind)
         self.im.axes.figure.canvas.draw()

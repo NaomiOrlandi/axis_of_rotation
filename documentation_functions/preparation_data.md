@@ -18,7 +18,7 @@ list of 2D arrays representing the read images.
 - **ImportError**  
 when the directory does not contain any .tiff file.  
 
-- **ImportError**  
+- **OSError**  
 when the directory does not exist.
 
 ## `create_array (img_list,img_list_tomo)`

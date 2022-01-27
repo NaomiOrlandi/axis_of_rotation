@@ -80,6 +80,36 @@ The user has also the possibility to perform preprocessing on the images (one or
 The projection images must be of .tiff format and the tomography has to be performed with a maximum angle of 180° or 360°.
 A flat and a dark image or stack of the same format are required.
 
+## **Installation**
+Clone the repository [axis_of_rotation](https://github.com/NaomiOrlandi/axis_of_rotation), then create a conda environment with the dependencies expressed in *environment.yml*, activate it and use the package manager [pip](https://pip.pypa.io/en/stable/) to install the application.
+
+```
+git clone https://github.com/NaomiOrlandi/axis_of_rotation
+cd axis_of_rotation
+conda env create -f environment.yml
+conda activate axrot
+pip install COR
+```
+
+## **Usage**
+
+When COR is installed, the user has to modify the *configuration.ini* file or write another configuration file with the extension .ini and with the same structure of *configuration.ini* file. Then he/she can simply type on command line `python COR config_file.ini <optional arguments>`.  
+where `config_file.ini` is the configuration file chosen by the user.
+In order to have a description of the positional and optional arguments, type `python COR -h` or `python COR --help`
+### **Positional argument**
+- `config_file` : the path of the configuration file;
+### **Optional arguments**
+- `-roi` : it allows to perform the cropping of all the tomographic projection images, drawing a ROI on one of them;
+
+- `-norm` : images in the stack are normalized, considering flat and dark images. If the images were cropped, the result will be a stack of images with crop dimensions;
+
+- `-outliers` : images are filtered from bright, dark or both outliers.
+
+Once preprocessing is performed, the position estimate of the sample axis of rotation (offset and tilt angle) is computed.
+Then the user, looking at the figures that represent the results, can decide whether to correct the images, to perform again the estimate or to exit and abort the script.
+
+ROI coordinates (if images are cropped) and rotation axis position will be saved in file *data.txt*, while the corrected images in a path specified in the configuration file.
+
 ## **Structure**
 The program in structured as the following:
 
@@ -95,7 +125,7 @@ Finally in section **[final files]** are stored the desired path for a file *dat
    - **create_array**, that converts a list of images to a 3D array;
    - **projection_0_180**, that selects the projections at 0° and 180° from a stack of projections.
 
-3. a [file for the preprocessing and the correction of the images](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/COR/preprocess_and_correction.py), where the functions for the correction of the images and for their eventual preprocessing are collected.
+3. a [file for the preprocessing and the correction of the images](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/COR/preprocess_and_correction.py) and [one for the interactions of the user with the program](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/COR/user_interaction.py), where the functions for the correction of the images and for their eventual preprocessing are collected.
 
    For the preprocessing:  
 
@@ -105,8 +135,7 @@ Finally in section **[final files]** are stored the desired path for a file *dat
    - **cropping**, which crops all the images of the stack considering the coordinates of a ROI.
 
    **Normalization**
-   - **normalization_with_ROI**, that normalizes all the images in the stack considering flat and dark images and just a crop of the images;
-   - **normalization_no_ROI**, that normalizes all the images in the stack considering flat and dark images.
+   - **normalization**, that normalizes all the images in the stack considering flat and dark images.
 
    **Outliers filter**
    - **outliers_filter**, which removes bright or dark or both outliers from a stack of images, through the method described in [Preprocessing](#Preprocessing). The threshold is global and is set to 0.02.  
@@ -135,46 +164,20 @@ In both the files, property and unit tests are present. A folder called *testing
 
 For a more detailed description of the functions, see the [documentation for functions](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/documentation_functions).
 
-## **Installation**
-Clone the repository [axis_of_rotation](https://github.com/NaomiOrlandi/axis_of_rotation), then create a conda environment with the dependencies expressed in *environment.yml*, activate it and use the package manager [pip](https://pip.pypa.io/en/stable/) to install the application.
 
-```
-git clone https://github.com/NaomiOrlandi/axis_of_rotation
-cd axis_of_rotation
-conda env create -f environment.yml
-conda activate axrot
-pip install COR
-```
-
-## **Usage**
-
-When COR is installed, the user has to modify the *configuration.ini* file with the desired data, following the descriptions reported in the file.
-Then he/she can simply type on command line `python COR <optional arguments>`.  
-In order to have a description of the optional arguments, type `python COR -h` or `python COR --help`
-### **Optional arguments**
-- `-roi` : it allows to perform the cropping of all the tomographic projection images, drawing a ROI on one of them;
-
-- `-norm` : images in the stack are normalized, considering flat and dark images. If the images were cropped, the result will be a stack of images with crop dimensions;
-
-- `-outliers` : images are filtered from bright, dark or both outliers.
-
-Once preprocessing is performed, the position estimate of the sample axis of rotation (offset and tilt angle) is computed.
-Then the user, looking at the figures that represent the results, can decide whether to correct the images, to perform again the estimate or to exit and abort the script.
-
-ROI coordinates (if images are cropped) and rotation axis position will be saved in file *data.txt*, while the corrected images in a path specified in the [configuration file](https://github.com/NaomiOrlandi/axis_of_rotation/blob/main/configuration.ini).
 
 ## **Example**
 The folder [example_dataset](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset) contains an example of data structure, usable with the application.   
 In [projections](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/projections) 181 x-ray tomoographic projection images of a wooden cube with two holes are stored. The last angle of acquisition is 360°. The tilt angle of the sample rotation axis is known and it is 2°. 
 In [flat](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/flat) and [dark](https://github.com/NaomiOrlandi/axis_of_rotation/tree/main/example_dataset/dark) are contained rispectively the flat and dark images of the same acquisition.
 
-The user has to insert the correct filepaths for the initial images, for the corrected ones and for *data.txt* in the configuration file *configuration.ini*, the variable *angle* has to be 360 and *radius_neighborhood* can be any desired integer for the outliers filtering (in this example it is 5).
+In this example *configuration.ini* is considered as configuration file and the user inserts the correct filepaths for the initial images, for the corrected ones and for *data.txt*, the variable *angle* as 360 and *radius_neighborhood* that can be any desired integer for the outliers filtering (in this example it is 5).
 
 ### **Example with cropping, normalization and bright and dark outliers filtering**
 
 Once the configuration file is prepared, open the command line and type 
 
-`python COR -roi -norm -outliers`
+`python COR configuration.ini -roi -norm -outliers`
 
 The passages will be the following:
 
@@ -256,10 +259,10 @@ The passages will be the following:
    plugins: hypothesis-6.34.1
    collected 30 items
 
-   test_preparation_data.py ...........                                                                [ 36%]
+   test_preparation_data.py ...........                                                                [ 33%]
    test_preprocess_and_correction.py ...................                                               [100%]
 
-   ===================================== 30 passed in 61.20s (0:01:01) ====================================== 
+   ===================================== 30 passed in 44.13s  ====================================== 
    ```
 
 
