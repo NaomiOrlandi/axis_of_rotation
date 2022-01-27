@@ -14,8 +14,6 @@ from hypothesis.extra.numpy import arrays
 
 
 
-np.random.seed(0)
-
 #strategy for the elements of arrays (floats)
 array_elements = st.floats(min_value=1,max_value=250,allow_nan=False, allow_infinity=False,width=32)
 array_elements_dark = st.floats(min_value=1,max_value=10,allow_nan=False, allow_infinity=False,width=32)
@@ -256,6 +254,7 @@ def test_cropping_good_coordinates():
     The test asserts even that the dimensions of the cropped images correspond to the number
     of rows and the number of columns selected.
     '''
+    np.random.seed(0)
     #random 3D array to represent en image stack
     img_array= np.random.rand(10,10,10)
     #coordinates for the ROI
@@ -276,6 +275,7 @@ def test_cropping_bad_coordinates ():
     are given as input to the cropping function (preprocess_and_correction.cropping()),
     that crop all the images in a stack.
     '''
+    np.random.seed(0)
     img_array= np.random.rand(10,10,10)
     rowmax =2
     rowmin = 5
@@ -292,6 +292,7 @@ def croping_ROI_as_the_image ():
     Test for the invariance of the dimensions of the 3D array containing
     2D images when images are cropped considering a ROI with the same size of the 2D images.
     '''
+    np.random.seed(0)
     img_array= np.random.rand(10,10,10)
     rowmin=colmin=0
     rowmax=colmax=9
@@ -549,6 +550,7 @@ def test_outlier_filter_order ():
     filter and secondly of the dark outlier filter produces the same result
     of the inverse application.
     '''
+    np.random.seed(0)
     stack = np.random.rand(10,10,10)
 
     with mock.patch('builtins.input',return_value='b'):

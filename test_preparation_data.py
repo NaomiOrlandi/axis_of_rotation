@@ -7,8 +7,6 @@ import hypothesis.strategies as st
 from hypothesis.extra.numpy import arrays,array_shapes
 
 
-np.random.seed(0)
-
 #angles used in test_proj_0_180_dimensions() and test_projection_0_180_correct_angles()
 angle1=180
 angle2=360
@@ -117,6 +115,7 @@ def test_create_array ():
     with same lenght to the reference list is equal to the 
     shape of the reference list transformed in 3D array
     '''
+    np.random.seed(0)
     test_array = np.random.rand(3,2,2)
     test_ref_list = test_array.tolist()
     fin_array = preparation_data.create_array(test_ref_list,test_ref_list)
@@ -131,6 +130,7 @@ def test_create_array_one_img ():
     The test asserts that the shape of the 3D array returned from the initial list
     is equal to the shape of ref list transformed to a 3D array
     '''
+    np.random.seed(0)
     test_array = np.random.rand(3,2,2)
     test_ref_list = test_array.tolist()
     test_list = np.random.rand(1,2,2).tolist()
@@ -146,6 +146,7 @@ def test_create_array_few_img ():
     the ones contained in the reference list.
     The test controll the raise of ValueError
     '''
+    np.random.seed(0)
     test_array = np.random.rand(3,2,2)
     test_ref_list = test_array.tolist()
     test_list = np.random.rand(2,2,2).tolist()
@@ -163,6 +164,7 @@ def test_create_array_wrong_list ():
     reference list.
     It asserts the raise of ValueError with the correct message.
     '''
+    np.random.seed(0)
     test_ref_list = np.random.rand(3,2,5).tolist()
     test_list = np.random.rand(3,4,2).tolist()
     with pytest.raises(ValueError) as e:
@@ -181,6 +183,7 @@ def test_projection_0_180_correct_angles ():
     The test assert that the two images selected in the stack are corrected.
     In this test the angles considered are 180 (angle1 )and 360 (angle2).
     '''
+    np.random.seed(0)
     array=np.random.rand(5,2,2)
     array_corr=np.where(np.isnan(array),0,array)
     arr_360_0,arr_360_180=preparation_data.projection_0_180(angle2,array_corr)
@@ -199,6 +202,7 @@ def test_projection_0_180_wrong_angle ():
     In this test an angle different from 180 or 360 degrees is considered.
     Hence the raise of ValueError with the corresponding message is asserted.
     '''
+    np.random.seed(0)
     array=np.random.rand(5,2,2)
     array_corr=np.where(np.isnan(array),0,array)
     angle = 200
