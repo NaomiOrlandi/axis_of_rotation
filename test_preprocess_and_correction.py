@@ -27,21 +27,20 @@ list_rows = st.lists(st.integers(0,4),min_size=2,max_size=2).map(sorted).filter(
 list_columns = st.lists(st.integers(0,4),min_size=2,max_size=2).map(sorted).filter(lambda x : x[0] < x[1])
 #strategy for a list of 2 different sorted random integers in [0,9], used to select a ROI od array_2D
 list_yROI = st.lists(st.integers(0,9),min_size=2,max_size=2).map(sorted).filter(lambda x : x[0] < x[1])
-#strategy for a 3D array of floats (represents stack of images 5x5)
-array_for_stack = arrays(float,([10,5,5]),elements=array_elements,fill=st.nothing())
 
-#strategies for 3D array (5x5x5) with floats in [0,255]
+
+#strategies for 3D array (5x5x5) with floats in [1,250]
 array_projections = arrays(np.float32,([5,5,5]),elements=array_elements,fill=st.nothing())
-#strategies for 3D array (5x5x5) with floats in [245,255]
+#strategies for 3D array (5x5x5) with floats in [250,255]
 array_flat = arrays(np.float32,([5,5,5]),elements=array_elements_flat,fill=st.nothing())
-#strategies for 3D array (5x5x5) with floats in [0,10]
+#strategies for 3D array (5x5x5) with floats in [1,10]
 array_dark = arrays(np.float32,([5,5,5]),elements=array_elements_dark,fill=st.nothing())
 
 #==================================
 #PROPERTY TESTING
 #==================================
 
-@given(im_stack=array_for_stack,
+@given(im_stack=array_projections,
        rows_ROI = list_rows,
        columns_ROI = list_columns)
 def test_cropping_same_lenght (im_stack,rows_ROI,columns_ROI):
@@ -190,7 +189,7 @@ def test_normalization_values_in_interval (tomo_stack,flat_stack,dark_stack):
     
 
 
-@given(tomo_stack=array_for_stack,
+@given(tomo_stack=array_projections,
        ans = st.text(alphabet= list('aAbBdD'), min_size=1,max_size=1),
        neighboors = st.integers(1,3))
 #@settings(suppress_health_check=[HealthCheck.filter_too_much])
