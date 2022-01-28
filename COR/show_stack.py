@@ -5,6 +5,18 @@ class IndexTracker:
     '''
     In this class all the characteristics for the visualization of 
     a stack of images are set.
+
+    Methods
+    ------------
+    __init__(self,ax,X)
+        initialize the image window with a specific title and structure.
+        The visualization of images in a stack starts with the image in the middle.
+    
+    on_scroll(self,ax,X)
+        allows to scroll through the images pressing the right/left arrow key on the keyboard.
+
+    update(self,event)
+        updates the visualized slice and the label on the y-axis.
     '''
     def __init__(self, ax, X):
         '''
@@ -39,7 +51,7 @@ class IndexTracker:
 
     def update(self):
         '''
-        This method update the visualizad slice and the label
+        This method updates the visualized slice and the label
         of y-axis when the slice changes.'''
 
         self.im.set_data(self.X[self.ind, :, :])

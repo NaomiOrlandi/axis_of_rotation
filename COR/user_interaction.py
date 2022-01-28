@@ -88,7 +88,8 @@ def ROIs_for_correction(ref_proj,ystep=5):
     '''
     This function allows to select one or multiple ROIs in the projections
     that will be considered when searching for the axis of rotation
-    offset and tilt angle in the function find_shift_and_tilt_angle().
+    offset and tilt angle in the function 
+    preprocess_and_correction.find_shift_and_tilt_angle().
     The suggestion is to select the regions where the sample is visible
     and where there is as little noise as possible.
     The method returns a 1D array containing the values of y coordinate
@@ -132,7 +133,8 @@ def ROIs_for_correction(ref_proj,ystep=5):
 
 def graph_axis_rotation (proj_0,proj_180,y_of_ROIs,m,q,shift,offset,middle_shift,theta):
     '''
-    This function shows two figures that report the results of find_shift_and_tilt_angle function.
+    This function shows two figures that report the results of 
+    preprocess_and_correction.find_shift_and_tilt_angle() function.
     In the first figure are shown the computed shift of the rotation axis from the polynomial fit
     and the subtraction between the projection at 0° and the horizontal flip of the projection
     at 180° (proj_0 - pro_180[:,::-1]) before the correction.
