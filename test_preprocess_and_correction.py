@@ -71,7 +71,7 @@ def test_cropping_same_lenght (im_stack,rows_ROI,columns_ROI):
         assert im_stack_cropped.shape[i] <= im_stack.shape[i]
 
 
-#TO DO:check for the type of arrays for stack
+
 @given(tomo_stack=array_projections,
        flat_stack=array_flat,
        dark_stack=array_dark)
@@ -434,7 +434,8 @@ def test_outliers_filter_bright_spot_image_b():
         im_stack_filt = preprocess_and_correction.outliers_filter(im_stack,5)
         
         for i in range(3):
-            assert np.max(im_stack_filt[i]) == np.min(im_stack_filt[i]) == 0.0
+            assert np.max(im_stack_filt[i]) == 0.0
+            assert np.min(im_stack_filt[i]) == 0.0
 
 def test_outliers_filter_bright_spot_image_a():
     '''
