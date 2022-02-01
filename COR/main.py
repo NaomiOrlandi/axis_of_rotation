@@ -118,6 +118,10 @@ def main ():
     elif args.out:
         tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack,radius_neighborhood)
 
+    #no preproc
+    else :
+        tomo_stack_preproc = tomo_stack
+
 
     #select projections at 0° and 180°
     tomo_stack_preproc_0, tomo_stack_preproc_180 = preparation_data.projection_0_180(last_angle,tomo_stack_preproc)
