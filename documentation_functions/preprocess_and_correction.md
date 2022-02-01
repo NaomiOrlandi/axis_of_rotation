@@ -151,7 +151,39 @@ the tilt angle of the rotation axis with respect to the central vertical axis of
 - **ValueError**  
 when the number of elements in **y_of_ROIs** is equal to 1, that is when the selected ROI has null height.
 
+## `correction_axis_rotation (img_stack,shift,theta,datapath)`
 
+This function performs the correction of all the images in the stack, according to the shift and tilt angle of the axis of rotation with respect to the central vertical axis of the images.
+The function also open the file data.txt placed in the path expressed by datapath and write there the values of the shift and the tilt angle of the axis of rotation.
+Finally it returns the stack of corrected images.
 
+**Parameters:**  
+- **img_stack : ndarray**
+3D array containing the tomographic projection images to correct.  
 
+- **shift : int**  
+shift of the axis of rotation with respect to the central vertical axis of the images (in px).  
+
+- **theta : float**  
+the tilt angle of the rotation axis with respect to the central vertical axis of the images (in degrees).  
+
+- **datapath : str**  
+string representing the directory path where data.txt is placed.  
+
+**Returns:**  
+- **img_stack : ndarray**  
+3D array containing the corrected tomographic images.  
+
+## `save_images (new_fname,img_stack,digits)`
+
+This function saves the stack of corrected images in the directory and with the filename prefix expressed by new_fname.
+
+**Parameters:**  
+- **new_fname : str**  
+string representing the new files (.tiff images) path and the prefix of their name.  
+
+- **img_stack : ndarray**  
+3D array of the corrected images.
+- **digits : int**  
+number of digits used for the numbering of the images.
 
