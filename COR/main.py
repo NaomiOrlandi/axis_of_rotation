@@ -88,50 +88,31 @@ def main ():
         rowmin,rowmax,colmin,colmax = user_interaction.draw_ROI(tomo_0,'selection of ROI')
         preprocess_and_correction.save_ROI(rowmin,rowmax,colmin,colmax,datapath)
         print('> Tomographic projections:')
-        tomo_stack_preproc = preprocess_and_correction.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
+        tomo_stack = preprocess_and_correction.cropping(tomo_stack,rowmin,rowmax,colmin,colmax)
         
-        #normalization and outliers filter (cropping)
-        if args.norm:
-            print('> Dark images:')
-            dark_stack_crop = preprocess_and_correction.cropping(dark_stack,rowmin,rowmax,colmin,colmax)
-            print('> Flat images:')
-            flat_stack_crop = preprocess_and_correction.cropping(flat_stack,rowmin,rowmax,colmin,colmax)
-            tomo_stack_preproc = preprocess_and_correction.normalization(tomo_stack_preproc, dark_stack_crop, flat_stack_crop)
-            
-            if args.out:
-                tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack_preproc,radius_neighborhood)
-        
-        #outliers filter (cropping)
-        elif args.out:
-            tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack_preproc,radius_neighborhood)
-    
-    #no cropping
     #normalization
-    elif args.norm:
-        tomo_stack_preproc = preprocess_and_correction.normalization(tomo_stack, dark_stack, flat_stack)
+    if args.norm:
+        print('> Dark images:')
+        dark_stack = preprocess_and_correction.cropping(dark_stack,rowmin,rowmax,colmin,colmax)
+        print('> Flat images:')
+        flat_stack = preprocess_and_correction.cropping(flat_stack,rowmin,rowmax,colmin,colmax)
+        tomo_stack = preprocess_and_correction.normalization(tomo_stack, dark_stack, flat_stack)
+    #outlier filter
+    if args.out:
+        tomo_stack = preprocess_and_correction.outliers_filter(tomo_stack,radius_neighborhood)
         
-        #normalization and outlierss filter
-        if args.out:
-            tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack_preproc,radius_neighborhood)
-    
-    #outliers filter
-    elif args.out:
-        tomo_stack_preproc = preprocess_and_correction.outliers_filter(tomo_stack,radius_neighborhood)
 
-    #no preproc
-    else :
-        tomo_stack_preproc = tomo_stack
 
 
     #select projections at 0° and 180°
-    tomo_stack_preproc_0, tomo_stack_preproc_180 = preparation_data.projection_0_180(last_angle,tomo_stack_preproc)
+    tomo_stack_0, tomo_stack_180 = preparation_data.projection_0_180(last_angle,tomo_stack)
 
 #find axis and correction
     condition = True
     while condition:
-        y_of_ROIs = user_interaction.ROIs_for_correction(tomo_stack_preproc_0,ystep=5)
-        m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_preproc_0,tomo_stack_preproc_180)
-        user_interaction.graph_axis_rotation(tomo_stack_preproc_0,tomo_stack_preproc_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
+        y_of_ROIs = user_interaction.ROIs_for_correction(tomo_stack_0,ystep=5)
+        m,q,shift,offset,middle_shift, theta = preprocess_and_correction.find_shift_and_tilt_angle(y_of_ROIs,tomo_stack_0,tomo_stack_180)
+        user_interaction.graph_axis_rotation(tomo_stack_0,tomo_stack_180,y_of_ROIs,m,q,shift,offset,middle_shift, theta)
         
         ans= user_interaction.user_choice_for_correction()
         if(ans=='Y' or ans=='y'):
@@ -149,7 +130,7 @@ def main ():
         else:
             print('Input not valid.')
 
-    tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack_preproc,middle_shift,theta,datapath)
+    tomo_stack_corrected = preprocess_and_correction.correction_axis_rotation(tomo_stack,middle_shift,theta,datapath)
     preprocess_and_correction.save_images(new_filepath,tomo_stack_corrected,digits)
 
 
