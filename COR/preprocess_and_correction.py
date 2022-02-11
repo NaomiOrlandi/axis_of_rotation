@@ -97,7 +97,7 @@ def normalization (img_stack,dark_stack,flat_stack):
         if img_stack, dark_stack and flat_stack have different dimensions
     '''
     if img_stack.shape == dark_stack.shape and img_stack.shape == flat_stack.shape:
-        img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_draw=False)
+        img_stack_norm = ntp.normalize_proj(img_stack,dark_stack,flat_stack,dose_draw=False,crop_draw=False,min_denom=0.000000001,min_ratio=0.0000000001)
         return img_stack_norm
     else:
         raise ValueError('the stack of images (tomographic projections,flat images and dark images) must have the same dimensions')
