@@ -120,7 +120,7 @@ def test_normalization_max_value (tomo_stack,flat_stack,dark_stack):
 
     list=[]
     for i in range(stack_norm.shape[0]):
-        max_norm = np.max(stack_norm[i,:,:])
+        max_norm = np.max(np.exp(-stack_norm[i,:,:]))
         max_no_norm = np.max(tomo_stack[i,:,:])
         h= max_norm <= max_no_norm
         list.append(h)
@@ -151,7 +151,7 @@ def test_normalization_min_value (tomo_stack,flat_stack,dark_stack):
 
     list=[]
     for i in range(stack_norm.shape[0]):
-        min_norm = np.min(stack_norm[i,:,:])
+        min_norm = np.min(np.exp(-stack_norm[i,:,:]))
         min_no_norm = np.min(tomo_stack[i,:,:])
         h= min_norm <= min_no_norm
         list.append(h)
@@ -183,7 +183,10 @@ def test_normalization_values_in_interval (tomo_stack,flat_stack,dark_stack):
     
     stack_norm = preprocess_and_correction.normalization(tomo_stack,dark_stack,flat_stack)
     
-    and_result = np.logical_and(stack_norm>=0,stack_norm<=1)
+    max_val= -np.log(1e-10)
+    min_val= -np.log(10)
+
+    and_result = np.logical_and(stack_norm>min_val,stack_norm<=max_val)
     all_result = np.all(and_result)
     assert all_result
     
@@ -323,7 +326,7 @@ def test_normalization_max_val():
 
     list=[]
     for i in range(im_norm.shape[0]):
-        max_norm = np.max(im_norm[i,:,:])
+        max_norm = np.max(np.exp(-im_norm[i,:,:]))
         max_no_norm = np.max(imar[i,:,:])
         h= max_norm <= max_no_norm
         list.append(h)
@@ -331,7 +334,7 @@ def test_normalization_max_val():
     res=all(l for l in list)
     assert res
 
-def test_normalization_max_val():
+def test_normalization_mix_val():
     '''
     This test asserts that the min px value of the normalized images
     is always equal or lower than the min px value of the inital images.
@@ -355,7 +358,7 @@ def test_normalization_max_val():
 
     list=[]
     for i in range(im_norm.shape[0]):
-        min_norm = np.min(im_norm[i,:,:])
+        min_norm = np.min(np.exp(-(im_norm[i,:,:])))
         min_no_norm = np.min(imar[i,:,:])
         h= min_norm <= min_no_norm
         list.append(h)
@@ -412,8 +415,8 @@ def test_norm_mean ():
     norm_stack = preprocess_and_correction.normalization(imar,darkar,flatar)
 
     for i in range(norm_stack.shape[0]):
-        res = (np.mean(imar[i-1,:,:])-np.mean(darkar[i-1,:,:]))/(np.mean(flatar[i-1,:,:])-np.mean(darkar[i-1,:,:]))
-        assert math.isclose(np.mean(norm_stack[i-1,:,:]),res,rel_tol=1e-01)
+        res = -np.log((np.mean(imar[i-1,:,:])-np.mean(darkar[i-1,:,:]))/(np.mean(flatar[i-1,:,:])-np.mean(darkar[i-1,:,:])))
+        assert math.isclose(np.mean(norm_stack[i-1,:,:]),res,rel_tol=5e-01)
 
 
 def test_outliers_filter_bright_spot_image_b():
