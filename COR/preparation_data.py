@@ -32,7 +32,7 @@ def reader_gray_images (filepath):
 
     if os.path.isdir(filepath):
         for filename in glob.glob(files): 
-            im=cv2.imread(filename,cv2.IMREAD_GRAYSCALE) #0 stands for the gray_image reading (default is RGB reading)
+            im=cv2.imread(filename,flags=(cv2.IMREAD_GRAYSCALE | cv2.IMREAD_ANYDEPTH)) #0 stands for the gray_image reading (default is RGB reading)
             image_list.append(im)
         if len(image_list)==0:
             raise OSError('directory {0} does not contain any .tiff file'.format(filepath))
@@ -118,7 +118,7 @@ def projection_0_180 (angle,img_array):
     '''
     proj_0 = img_array[0,:,:]
     if angle == 360:
-        proj_180 = img_array[int((img_array.shape[0]/2)),:,:]
+        proj_180 = img_array[int(((img_array.shape[0]-1)/2)),:,:]
         return proj_0,proj_180
     elif angle == 180:
         proj_180 = img_array[int(img_array.shape[0]-1),:,:]
