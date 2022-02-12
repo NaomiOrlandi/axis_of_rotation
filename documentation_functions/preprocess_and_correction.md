@@ -55,7 +55,7 @@ if **rowmin**>**rowmax** or **colmin**>**colmax**.
 
 ## `normalization (img_stack,dark_stack,flat_stack)`
 
-This function computes the normalization of all the the images (tomographic projections) of a stack, using a stack of dark images and one of flat images. It returns the new stack or normalized images. The fuction used is the [neutompy.normalize_proj](https://neutompy-toolbox.readthedocs.io/en/latest/neutompy.preproc.preproc.html#normalize_proj), where the dose ROI and the crop ROI are not considered.
+This function computes the normalization of all the the images (tomographic projections) of a stack, using a stack of dark images and one of flat images. It returns the new stack or normalized images. The fuction used is the [neutompy.normalize_proj](https://neutompy-toolbox.readthedocs.io/en/latest/neutompy.preproc.preproc.html#normalize_proj), where the dose ROI and the crop ROI are not considered and logarithm is performed.
 
 **Parameters:**  
 - **img_stack : ndarray**  

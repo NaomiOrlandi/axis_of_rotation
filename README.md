@@ -34,9 +34,9 @@ Some of the improvment of of the images are cropping, normalization and the outl
    It is a process that changes the range of pixel intensity values. Also called contrast stretching, it enhances the contrast of the image.
    Each normalized px intensity is calculated with the following formula,  
 
-   ![I](https://latex.codecogs.com/svg.image?I_%7Bnew%7D%20=%20%5Cfrac%7BI%20-%20I_%7Bmin%7D%7D%7BI_%7Bmax%7D%20-%20I_%7Bmin%7D%7D)
+   ![I](https://latex.codecogs.com/svg.image?-ln(%5Cfrac%7BI-I_%7Bmin%7D%7D%7BI_%7Bmax%7D-I_%7Bmin%7D%7D))
 
-   where *I<sub>new</sub>* is the new px intensity, *I* is the old px intensity, *I<sub>min</sub>* is the px intensity of the dark image and *I<sub>max</sub>* is the px intensity of the flat image acquired with light on and without the sample.
+   where *I<sub>new</sub>* is the new px intensity, *I* is the old px intensity, *I<sub>min</sub>* is the px intensity of the dark image, *I<sub>max</sub>* is the px intensity of the flat image acquired with light on and without the sample and ln is the natural logarithm.
 
 - **Outliers filtering.**  
    It is a nonlinear process that reduces random or salt-and-pepper noise and preserves edges in an image. It's useful for correcting, e.g., hot pixels or dead pixels of a CCD image.  
@@ -257,12 +257,12 @@ The passages will be the following:
    platform win32 -- Python 3.8.10, pytest-6.2.5, py-1.11.0, pluggy-1.0.0
    rootdir: C:\Users\Naomi\correctionCOR
    plugins: hypothesis-6.34.1
-   collected 30 items
+   collected 31 items
 
    test_preparation_data.py ...........                                                                [ 33%]
-   test_preprocess_and_correction.py ...................                                               [100%]
+   test_preprocess_and_correction.py ....................                                               [100%]
 
-   ===================================== 30 passed in 44.13s  ====================================== 
+   ===================================== 31 passed in 44.13s  ====================================== 
    ```
 
 

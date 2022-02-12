@@ -73,8 +73,8 @@ def normalization (img_stack,dark_stack,flat_stack):
     It returns the new stack or normalized images.
     The fuction used is the neutompy.normalize_proj(proj, dark, flat,  proj_180=None, out=None,
     dose_file='', dose_coor=(), dose_draw=False,crop_file='', crop_coor=(), crop_draw=False,
-    scattering_bias=0.0, minus_log_lowest_val=None,min_denom=1.0e-6,  min_ratio=1e-6, max_ratio=10.0,
-    mode='mean', log=False,  sino_order=False, show_opt='mean'),
+    scattering_bias=0.0, minus_log_lowest_val=None,min_denom=1.0e-9,  min_ratio=1e-10, max_ratio=10.0,
+    mode='mean', log=True,  sino_order=False, show_opt='mean'),
     where the dose ROI and the crop ROI are not considered.
 
     Parameters
