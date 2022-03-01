@@ -290,3 +290,8 @@ ISSN 0168-9002,
 https://doi.org/10.1016/j.nima.2011.01.129.
 
 
+## **Contacts**
+# **Author:**
+Naomi Orlandi\
+naomi.orlandi@studio.unibo.it\
+naomi.orlandi@gmail.com
